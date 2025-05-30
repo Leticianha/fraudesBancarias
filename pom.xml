@@ -25,7 +25,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <mainClass>com.mycompany.exemplobanco.Conexao</mainClass>
+                    <mainClass>com.mycompany.sistemadebitoautomatico.SistemaDebitoAutomatico</mainClass>
                 </configuration>
             </plugin>
         </plugins>
