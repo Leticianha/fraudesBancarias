@@ -1,16 +1,15 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- */
-
 package com.mycompany.sistemadebitoautomatico;
+import detectorfraude.model.ConexaoMySQL;
+import java.sql.Connection;
+import java.sql.SQLException;
 
-/**
- *
- * @author Leticia
- */
+
 public class SistemaDebitoAutomatico {
-
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        try (Connection conexao = ConexaoMySQL.getConexao()) {
+            System.out.println("Conexão realizada com sucesso!");
+        } catch (SQLException ex) {
+            System.out.println("Erro ao conectar: " + ex.getMessage());
+        }
     }
 }
