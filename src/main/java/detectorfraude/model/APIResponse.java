@@ -1,13 +1,40 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package detectorfraude.model;
 
-/**
- *
- * @author Leticia
- */
+import com.google.gson.annotations.SerializedName;
+
 public class APIResponse {
-    
+
+    @SerializedName("nome")
+    private String nome;
+
+    @SerializedName("cnpj")
+    private String cnpj;
+
+    @SerializedName("situacao")
+    private String situacao;
+
+    // Getters e Setters
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getCnpj() {
+        return cnpj;
+    }
+
+    public void setCnpj(String cnpj) {
+        this.cnpj = cnpj;
+    }
+
+    public String getSituacao() {
+        return situacao;
+    }
+
+    public void setSituacao(String situacao) {
+        this.situacao = situacao;
+    }
 }

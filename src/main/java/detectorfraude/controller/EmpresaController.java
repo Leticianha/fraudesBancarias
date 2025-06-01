@@ -1,13 +1,16 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package detectorfraude.controller;
 
-/**
- *
- * @author Leticia
- */
+import detectorfraude.model.Empresa;
+import detectorfraude.service.CnpjService;
+
 public class EmpresaController {
-    
+    private CnpjService cnpjService;
+
+    public EmpresaController() {
+        this.cnpjService = new CnpjService();
+    }
+
+    public Empresa consultarEmpresaPorCnpj(String cnpj) {
+        return cnpjService.consultarCnpj(cnpj);
+    }
 }

@@ -1,13 +1,19 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package detectorfraude.controller;
 
-/**
- *
- * @author Leticia
- */
+import detectorfraude.model.Empresa;
+
 public class IntegracaoAPIController {
-    
+
+    public void testarConsultaCnpj(String cnpj) {
+        EmpresaController empresaController = new EmpresaController();
+        Empresa empresa = empresaController.consultarEmpresaPorCnpj(cnpj);
+
+        if (empresa != null) {
+            System.out.println("Razão Social: " + empresa.getRazaoSocial());
+            System.out.println("CNPJ: " + empresa.getCnpj());
+            System.out.println("Situação Cadastral: " + empresa.getSituacaoCadastral());
+        } else {
+            System.out.println("CNPJ não encontrado ou erro na consulta.");
+        }
+    }
 }
