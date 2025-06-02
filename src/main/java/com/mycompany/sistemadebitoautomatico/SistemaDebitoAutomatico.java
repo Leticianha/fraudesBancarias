@@ -1,23 +1,28 @@
 package com.mycompany.sistemadebitoautomatico;
 
 import detectorfraude.model.Empresa;
+import detectorfraude.model.DebitoAutomatico;
 import detectorfraude.service.CnpjService;
 import detectorfraude.util.FormatacaoUtil;
 import detectorfraude.model.ConexaoMySQL;
+
 import java.sql.Connection;
 import java.sql.SQLException;
-
+import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.Scanner;
 
 public class SistemaDebitoAutomatico {
 
     public static void main(String[] args) {
+        System.out.println("\n===== Teste ConexaoMySQL =====");
         try (Connection conexao = ConexaoMySQL.getConexao()) {
             System.out.println("Conexão realizada com sucesso!");
         } catch (SQLException ex) {
             System.out.println("Erro ao conectar: " + ex.getMessage());
         }
 
+        System.out.println("\n===== Teste Integração com a API =====");
         Scanner scanner = new Scanner(System.in);
         CnpjService cnpjService = new CnpjService();
 
@@ -37,6 +42,20 @@ public class SistemaDebitoAutomatico {
         } else {
             System.out.println("CNPJ não encontrado ou inválido.");
         }
+
+        // ✅ Teste da classe DebitoAutomatico
+        System.out.println("\n===== Teste DebitoAutomatico =====");
+
+        DebitoAutomatico debito = new DebitoAutomatico(
+                1, // id
+                100, // idCliente
+                200, // idEmpresa
+                new BigDecimal("150.75"), // valor
+                LocalDate.now(), // dataDebito
+                true // recorrente
+        );
+
+        System.out.println(debito);  // Exibe o toString da classe
 
         scanner.close();
     }

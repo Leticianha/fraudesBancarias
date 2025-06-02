@@ -29,4 +29,16 @@ public class Empresa {
     public void setSituacaoCadastral(String situacaoCadastral) {
         this.situacaoCadastral = situacaoCadastral;
     }
+
+    public String getNome() {
+        throw new UnsupportedOperationException("Not supported yet."); 
+    }
+
+    public String getFantasia() {
+        throw new UnsupportedOperationException("Not supported yet."); 
+    }
+
+    public String getAtividadePrincipal() {
+        throw new UnsupportedOperationException("Not supported yet."); 
+    }
 }
