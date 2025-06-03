@@ -4,7 +4,7 @@ import detectorfraude.model.Empresa;
 import detectorfraude.model.DebitoAutomatico;
 import detectorfraude.service.CnpjService;
 import detectorfraude.util.FormatacaoUtil;
-import detectorfraude.model.ConexaoMySQL;
+import detectorfraude.util.ConexaoMySQL;
 
 import java.sql.Connection;
 import java.sql.SQLException;
