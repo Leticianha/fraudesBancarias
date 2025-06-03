@@ -5,50 +5,45 @@ import java.time.LocalDate;
 
 public class DebitoAutomatico {
 
-    private int id;
-    private int idCliente;
-    private int idEmpresa;
+    public enum TipoRecorrencia { MENSAL, SEMANAL, ANUAL, UNICO }
+    public enum StatusSuspeita { NORMAL, SUSPEITO, CONFIRMADO_COMO_FRAUDE }
+    public enum StatusAtivo { ATIVO, INATIVO }
+
+    private int debitoId;
+    private int clienteId;
+    private int empresaId;
     private BigDecimal valor;
-    private LocalDate dataDebito;
-    private boolean recorrente;
+    private LocalDate dataCadastro;
+    private LocalDate dataAgendamento; // ✅ Novo atributo
+    private String status;              // ✅ Novo atributo
+    private TipoRecorrencia tipoRecorrencia;
+    private StatusSuspeita statusSuspeita;
+    private StatusAtivo statusAtivo;
 
-    // Construtor padrão
-    public DebitoAutomatico() {
+    public DebitoAutomatico() {}
+
+    public int getDebitoId() {
+        return debitoId;
     }
 
-    // Construtor completo
-    public DebitoAutomatico(int id, int idCliente, int idEmpresa, BigDecimal valor, LocalDate dataDebito, boolean recorrente) {
-        this.id = id;
-        this.idCliente = idCliente;
-        this.idEmpresa = idEmpresa;
-        this.valor = valor;
-        this.dataDebito = dataDebito;
-        this.recorrente = recorrente;
+    public void setDebitoId(int debitoId) {
+        this.debitoId = debitoId;
     }
 
-    // Getters e Setters
-    public int getId() {
-        return id;
+    public int getClienteId() {
+        return clienteId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setClienteId(int clienteId) {
+        this.clienteId = clienteId;
     }
 
-    public int getIdCliente() {
-        return idCliente;
+    public int getEmpresaId() {
+        return empresaId;
     }
 
-    public void setIdCliente(int idCliente) {
-        this.idCliente = idCliente;
-    }
-
-    public int getIdEmpresa() {
-        return idEmpresa;
-    }
-
-    public void setIdEmpresa(int idEmpresa) {
-        this.idEmpresa = idEmpresa;
+    public void setEmpresaId(int empresaId) {
+        this.empresaId = empresaId;
     }
 
     public BigDecimal getValor() {
@@ -59,32 +54,67 @@ public class DebitoAutomatico {
         this.valor = valor;
     }
 
-    public LocalDate getDataDebito() {
-        return dataDebito;
+    public LocalDate getDataCadastro() {
+        return dataCadastro;
     }
 
-    public void setDataDebito(LocalDate dataDebito) {
-        this.dataDebito = dataDebito;
+    public void setDataCadastro(LocalDate dataCadastro) {
+        this.dataCadastro = dataCadastro;
     }
 
-    public boolean isRecorrente() {
-        return recorrente;
+    public LocalDate getDataAgendamento() {
+        return dataAgendamento;
     }
 
-    public void setRecorrente(boolean recorrente) {
-        this.recorrente = recorrente;
+    public void setDataAgendamento(LocalDate dataAgendamento) {
+        this.dataAgendamento = dataAgendamento;
     }
 
-    // toString
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public TipoRecorrencia getTipoRecorrencia() {
+        return tipoRecorrencia;
+    }
+
+    public void setTipoRecorrencia(TipoRecorrencia tipoRecorrencia) {
+        this.tipoRecorrencia = tipoRecorrencia;
+    }
+
+    public StatusSuspeita getStatusSuspeita() {
+        return statusSuspeita;
+    }
+
+    public void setStatusSuspeita(StatusSuspeita statusSuspeita) {
+        this.statusSuspeita = statusSuspeita;
+    }
+
+    public StatusAtivo getStatusAtivo() {
+        return statusAtivo;
+    }
+
+    public void setStatusAtivo(StatusAtivo statusAtivo) {
+        this.statusAtivo = statusAtivo;
+    }
+
     @Override
     public String toString() {
-        return "DebitoAutomatico{"
-                + "id=" + id
-                + ", idCliente=" + idCliente
-                + ", idEmpresa=" + idEmpresa
-                + ", valor=" + valor
-                + ", dataDebito=" + dataDebito
-                + ", recorrente=" + recorrente
-                + '}';
+        return "DebitoAutomatico{" +
+                "debitoId=" + debitoId +
+                ", clienteId=" + clienteId +
+                ", empresaId=" + empresaId +
+                ", valor=" + valor +
+                ", dataCadastro=" + dataCadastro +
+                ", dataAgendamento=" + dataAgendamento +
+                ", status='" + status + '\'' +
+                ", tipoRecorrencia=" + tipoRecorrencia +
+                ", statusSuspeita=" + statusSuspeita +
+                ", statusAtivo=" + statusAtivo +
+                '}';
     }
 }

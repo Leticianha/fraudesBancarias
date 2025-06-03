@@ -1,17 +1,30 @@
 package detectorfraude.model;
 
 public class Empresa {
-    private String razaoSocial;
+
+    private int empresaId;
+    private String nome;
     private String cnpj;
+    private boolean cnpjValido;
+    private String razaoSocial;
     private String situacaoCadastral;
 
-    // Getters e Setters
-    public String getRazaoSocial() {
-        return razaoSocial;
+    public Empresa() {}
+
+    public int getEmpresaId() {
+        return empresaId;
     }
 
-    public void setRazaoSocial(String razaoSocial) {
-        this.razaoSocial = razaoSocial;
+    public void setEmpresaId(int empresaId) {
+        this.empresaId = empresaId;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 
     public String getCnpj() {
@@ -22,6 +35,22 @@ public class Empresa {
         this.cnpj = cnpj;
     }
 
+    public boolean isCnpjValido() {
+        return cnpjValido;
+    }
+
+    public void setCnpjValido(boolean cnpjValido) {
+        this.cnpjValido = cnpjValido;
+    }
+
+    public String getRazaoSocial() {
+        return razaoSocial;
+    }
+
+    public void setRazaoSocial(String razaoSocial) {
+        this.razaoSocial = razaoSocial;
+    }
+
     public String getSituacaoCadastral() {
         return situacaoCadastral;
     }
@@ -30,15 +59,15 @@ public class Empresa {
         this.situacaoCadastral = situacaoCadastral;
     }
 
-    public String getNome() {
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    public String getFantasia() {
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    public String getAtividadePrincipal() {
-        throw new UnsupportedOperationException("Not supported yet."); 
+    @Override
+    public String toString() {
+        return "Empresa{" +
+                "empresaId=" + empresaId +
+                ", nome='" + nome + '\'' +
+                ", cnpj='" + cnpj + '\'' +
+                ", cnpjValido=" + cnpjValido +
+                ", razaoSocial='" + razaoSocial + '\'' +
+                ", situacaoCadastral='" + situacaoCadastral + '\'' +
+                '}';
     }
 }
