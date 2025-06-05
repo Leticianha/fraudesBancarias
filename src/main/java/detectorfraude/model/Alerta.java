@@ -4,16 +4,13 @@ import java.time.LocalDateTime;
 
 public class Alerta {
 
-    public enum StatusAlerta { PENDENTE, RESOLVIDO }
-
     private int alertaId;
     private int debitoId;
     private LocalDateTime dataAlerta;
     private String mensagem;
-    private StatusAlerta statusAlerta;
+    private String statusAlerta;
 
-    public Alerta() {}
-
+    // Getters e Setters
     public int getAlertaId() {
         return alertaId;
     }
@@ -46,22 +43,11 @@ public class Alerta {
         this.mensagem = mensagem;
     }
 
-    public StatusAlerta getStatusAlerta() {
+    public String getStatusAlerta() {
         return statusAlerta;
     }
 
-    public void setStatusAlerta(StatusAlerta statusAlerta) {
+    public void setStatusAlerta(String statusAlerta) {
         this.statusAlerta = statusAlerta;
-    }
-
-    @Override
-    public String toString() {
-        return "Alerta{" +
-                "alertaId=" + alertaId +
-                ", debitoId=" + debitoId +
-                ", dataAlerta=" + dataAlerta +
-                ", mensagem='" + mensagem + '\'' +
-                ", statusAlerta=" + statusAlerta +
-                '}';
     }
 }

@@ -5,23 +5,16 @@ import java.time.LocalDate;
 
 public class DebitoAutomatico {
 
-    public enum TipoRecorrencia { MENSAL, SEMANAL, ANUAL, UNICO }
-    public enum StatusSuspeita { NORMAL, SUSPEITO, CONFIRMADO_COMO_FRAUDE }
-    public enum StatusAtivo { ATIVO, INATIVO }
-
     private int debitoId;
     private int clienteId;
     private int empresaId;
     private BigDecimal valor;
     private LocalDate dataCadastro;
-    private LocalDate dataAgendamento; // ✅ Novo atributo
-    private String status;              // ✅ Novo atributo
-    private TipoRecorrencia tipoRecorrencia;
-    private StatusSuspeita statusSuspeita;
-    private StatusAtivo statusAtivo;
+    private String tipoRecorrencia;
+    private String statusSuspeita;
+    private String statusAtivo;
 
-    public DebitoAutomatico() {}
-
+    // Getters e Setters
     public int getDebitoId() {
         return debitoId;
     }
@@ -62,59 +55,27 @@ public class DebitoAutomatico {
         this.dataCadastro = dataCadastro;
     }
 
-    public LocalDate getDataAgendamento() {
-        return dataAgendamento;
-    }
-
-    public void setDataAgendamento(LocalDate dataAgendamento) {
-        this.dataAgendamento = dataAgendamento;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public TipoRecorrencia getTipoRecorrencia() {
+    public String getTipoRecorrencia() {
         return tipoRecorrencia;
     }
 
-    public void setTipoRecorrencia(TipoRecorrencia tipoRecorrencia) {
+    public void setTipoRecorrencia(String tipoRecorrencia) {
         this.tipoRecorrencia = tipoRecorrencia;
     }
 
-    public StatusSuspeita getStatusSuspeita() {
+    public String getStatusSuspeita() {
         return statusSuspeita;
     }
 
-    public void setStatusSuspeita(StatusSuspeita statusSuspeita) {
+    public void setStatusSuspeita(String statusSuspeita) {
         this.statusSuspeita = statusSuspeita;
     }
 
-    public StatusAtivo getStatusAtivo() {
+    public String getStatusAtivo() {
         return statusAtivo;
     }
 
-    public void setStatusAtivo(StatusAtivo statusAtivo) {
+    public void setStatusAtivo(String statusAtivo) {
         this.statusAtivo = statusAtivo;
-    }
-
-    @Override
-    public String toString() {
-        return "DebitoAutomatico{" +
-                "debitoId=" + debitoId +
-                ", clienteId=" + clienteId +
-                ", empresaId=" + empresaId +
-                ", valor=" + valor +
-                ", dataCadastro=" + dataCadastro +
-                ", dataAgendamento=" + dataAgendamento +
-                ", status='" + status + '\'' +
-                ", tipoRecorrencia=" + tipoRecorrencia +
-                ", statusSuspeita=" + statusSuspeita +
-                ", statusAtivo=" + statusAtivo +
-                '}';
     }
 }

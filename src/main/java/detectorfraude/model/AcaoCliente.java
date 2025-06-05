@@ -4,15 +4,13 @@ import java.time.LocalDateTime;
 
 public class AcaoCliente {
 
-    public enum Acao { BLOQUEAR, DENUNCIAR, IGNORAR }
-
     private int acaoId;
     private int alertaId;
     private int clienteId;
-    private Acao acao;
+    private String acao;
     private LocalDateTime dataAcao;
 
-    public AcaoCliente() {}
+    // Getters e Setters
 
     public int getAcaoId() {
         return acaoId;
@@ -38,11 +36,11 @@ public class AcaoCliente {
         this.clienteId = clienteId;
     }
 
-    public Acao getAcao() {
+    public String getAcao() {
         return acao;
     }
 
-    public void setAcao(Acao acao) {
+    public void setAcao(String acao) {
         this.acao = acao;
     }
 
@@ -52,16 +50,5 @@ public class AcaoCliente {
 
     public void setDataAcao(LocalDateTime dataAcao) {
         this.dataAcao = dataAcao;
-    }
-
-    @Override
-    public String toString() {
-        return "AcaoCliente{" +
-                "acaoId=" + acaoId +
-                ", alertaId=" + alertaId +
-                ", clienteId=" + clienteId +
-                ", acao=" + acao +
-                ", dataAcao=" + dataAcao +
-                '}';
     }
 }
