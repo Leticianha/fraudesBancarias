@@ -13,17 +13,27 @@ public class AlertaDAO {
         this.connection = connection;
     }
 
-    public void inserir(Alerta alerta) throws SQLException {
+    public int inserir(Alerta alerta) throws SQLException {
         String sql = "INSERT INTO Alerta (debito_id, data_alerta, mensagem, status_alerta) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, alerta.getDebitoId());
             stmt.setTimestamp(2, Timestamp.valueOf(alerta.getDataAlerta()));
             stmt.setString(3, alerta.getMensagem());
             stmt.setString(4, alerta.getStatusAlerta());
             stmt.executeUpdate();
+
+            // Recupera o ID gerado
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    int idGerado = rs.getInt(1);
+                    alerta.setAlertaId(idGerado); // seta no objeto
+                    return idGerado;
+                }
+            }
         } catch (SQLException e) {
             throw new SQLException("Erro ao inserir alerta: " + e.getMessage(), e);
         }
+        return -1;
     }
 
     public List<Alerta> listarTodos() throws SQLException {

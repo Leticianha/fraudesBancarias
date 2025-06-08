@@ -78,4 +78,18 @@ public class DebitoAutomatico {
     public void setStatusAtivo(String statusAtivo) {
         this.statusAtivo = statusAtivo;
     }
+
+    @Override
+    public String toString() {
+        return "DebitoAutomatico{"
+                + "debitoId=" + debitoId
+                + ", clienteId=" + clienteId
+                + ", empresaId=" + empresaId
+                + ", valor=" + valor
+                + ", dataCadastro=" + dataCadastro
+                + ", tipoRecorrencia='" + tipoRecorrencia + '\''
+                + ", statusSuspeita='" + statusSuspeita + '\''
+                + ", statusAtivo='" + statusAtivo + '\''
+                + '}';
+    }
 }

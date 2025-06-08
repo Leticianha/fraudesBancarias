@@ -11,7 +11,6 @@ public class AcaoCliente {
     private LocalDateTime dataAcao;
 
     // Getters e Setters
-
     public int getAcaoId() {
         return acaoId;
     }
@@ -50,5 +49,16 @@ public class AcaoCliente {
 
     public void setDataAcao(LocalDateTime dataAcao) {
         this.dataAcao = dataAcao;
+    }
+
+    @Override
+    public String toString() {
+        return "AcaoCliente{"
+                + "acaoId=" + acaoId
+                + ", alertaId=" + alertaId
+                + ", clienteId=" + clienteId
+                + ", acao='" + acao + '\''
+                + ", dataAcao=" + dataAcao
+                + '}';
     }
 }

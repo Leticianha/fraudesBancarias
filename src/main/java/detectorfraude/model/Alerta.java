@@ -50,4 +50,15 @@ public class Alerta {
     public void setStatusAlerta(String statusAlerta) {
         this.statusAlerta = statusAlerta;
     }
+
+    @Override
+    public String toString() {
+        return "Alerta{"
+                + "alertaId=" + alertaId
+                + ", debitoId=" + debitoId
+                + ", dataAlerta=" + dataAlerta
+                + ", mensagem='" + mensagem + '\''
+                + ", statusAlerta='" + statusAlerta + '\''
+                + '}';
+    }
 }
