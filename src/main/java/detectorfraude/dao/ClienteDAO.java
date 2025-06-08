@@ -28,8 +28,7 @@ public class ClienteDAO {
     public List<Cliente> listarTodos() throws SQLException {
         List<Cliente> clientes = new ArrayList<>();
         String sql = "SELECT * FROM Cliente";
-        try (PreparedStatement stmt = connection.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 Cliente c = new Cliente();
@@ -42,5 +41,40 @@ public class ClienteDAO {
             throw new SQLException("Erro ao listar clientes: " + e.getMessage(), e);
         }
         return clientes;
+    }
+
+    public Cliente buscarPorId(int id) throws SQLException {
+        String sql = "SELECT * FROM Cliente WHERE cliente_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Cliente cliente = new Cliente();
+                    cliente.setClienteId(rs.getInt("cliente_id"));
+                    cliente.setNome(rs.getString("nome"));
+                    cliente.setCpf(rs.getString("cpf"));
+                    return cliente;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void atualizar(Cliente cliente) throws SQLException {
+        String sql = "UPDATE Cliente SET nome = ?, cpf = ? WHERE cliente_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, cliente.getNome());
+            stmt.setString(2, cliente.getCpf());
+            stmt.setInt(3, cliente.getClienteId());
+            stmt.executeUpdate();
+        }
+    }
+
+    public void deletarPorId(int id) throws SQLException {
+        String sql = "DELETE FROM Cliente WHERE cliente_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
     }
 }

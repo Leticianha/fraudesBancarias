@@ -9,7 +9,8 @@ public class Empresa {
     private String razaoSocial;
     private String situacaoCadastral;
 
-    public Empresa() {}
+    public Empresa() {
+    }
 
     public int getEmpresaId() {
         return empresaId;
@@ -59,15 +60,22 @@ public class Empresa {
         this.situacaoCadastral = situacaoCadastral;
     }
 
+    public Empresa(int empresaId, String nome, String cnpj, boolean cnpjValido) {
+        this.empresaId = empresaId;
+        this.nome = nome;
+        this.cnpj = cnpj;
+        this.cnpjValido = cnpjValido;
+    }
+
     @Override
     public String toString() {
-        return "Empresa{" +
-                "empresaId=" + empresaId +
-                ", nome='" + nome + '\'' +
-                ", cnpj='" + cnpj + '\'' +
-                ", cnpjValido=" + cnpjValido +
-                ", razaoSocial='" + razaoSocial + '\'' +
-                ", situacaoCadastral='" + situacaoCadastral + '\'' +
-                '}';
+        return "Empresa{"
+                + "empresaId=" + empresaId
+                + ", nome='" + nome + '\''
+                + ", cnpj='" + cnpj + '\''
+                + ", cnpjValido=" + cnpjValido
+                + ", razaoSocial='" + razaoSocial + '\''
+                + ", situacaoCadastral='" + situacaoCadastral + '\''
+                + '}';
     }
 }

@@ -43,4 +43,41 @@ public class EmpresaDAO {
         }
         return empresas;
     }
+
+    public Empresa buscarPorId(int id) throws SQLException {
+        String sql = "SELECT * FROM Empresa WHERE empresa_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Empresa e = new Empresa();
+                    e.setEmpresaId(rs.getInt("empresa_id"));
+                    e.setNome(rs.getString("nome"));
+                    e.setCnpj(rs.getString("cnpj"));
+                    e.setCnpjValido(rs.getBoolean("cnpj_valido"));
+                    return e;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void atualizar(Empresa empresa) throws SQLException {
+        String sql = "UPDATE Empresa SET nome = ?, cnpj = ?, cnpj_valido = ? WHERE empresa_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, empresa.getNome());
+            stmt.setString(2, empresa.getCnpj());
+            stmt.setBoolean(3, empresa.isCnpjValido());
+            stmt.setInt(4, empresa.getEmpresaId());
+            stmt.executeUpdate();
+        }
+    }
+
+    public void deletarPorId(int id) throws SQLException {
+        String sql = "DELETE FROM Empresa WHERE empresa_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
+    }
 }

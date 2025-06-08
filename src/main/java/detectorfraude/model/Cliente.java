@@ -6,7 +6,14 @@ public class Cliente {
     private String nome;
     private String cpf;
 
-    public Cliente() {}
+    public Cliente() {
+    }
+
+    public Cliente(int clienteId, String nome, String cpf) {
+        this.clienteId = clienteId;
+        this.nome = nome;
+        this.cpf = cpf;
+    }
 
     public int getClienteId() {
         return clienteId;
@@ -34,10 +41,10 @@ public class Cliente {
 
     @Override
     public String toString() {
-        return "Cliente{" +
-                "clienteId=" + clienteId +
-                ", nome='" + nome + '\'' +
-                ", cpf='" + cpf + '\'' +
-                '}';
+        return "Cliente{"
+                + "clienteId=" + clienteId
+                + ", nome='" + nome + '\''
+                + ", cpf='" + cpf + '\''
+                + '}';
     }
 }

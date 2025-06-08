@@ -28,8 +28,7 @@ public class LogHistoricoDAO {
     public List<LogHistorico> listarTodos() throws SQLException {
         List<LogHistorico> logs = new ArrayList<>();
         String sql = "SELECT * FROM Log_Historico";
-        try (PreparedStatement stmt = connection.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 LogHistorico l = new LogHistorico();
@@ -43,5 +42,42 @@ public class LogHistoricoDAO {
             throw new SQLException("Erro ao listar logs históricos: " + e.getMessage(), e);
         }
         return logs;
+    }
+
+    public LogHistorico buscarPorId(int id) throws SQLException {
+        String sql = "SELECT * FROM Log_Historico WHERE log_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    LogHistorico log = new LogHistorico();
+                    log.setLogId(rs.getInt("log_id"));
+                    log.setClienteId(rs.getInt("cliente_id"));
+                    log.setDescricaoEvento(rs.getString("descricao_evento"));
+                    log.setDataEvento(rs.getTimestamp("data_evento").toLocalDateTime());
+                    return log;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void atualizar(LogHistorico log) throws SQLException {
+        String sql = "UPDATE Log_Historico SET cliente_id = ?, descricao_evento = ?, data_evento = ? WHERE log_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, log.getClienteId());
+            stmt.setString(2, log.getDescricaoEvento());
+            stmt.setTimestamp(3, Timestamp.valueOf(log.getDataEvento()));
+            stmt.setInt(4, log.getLogId());
+            stmt.executeUpdate();
+        }
+    }
+
+    public void deletarPorId(int id) throws SQLException {
+        String sql = "DELETE FROM Log_Historico WHERE log_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
     }
 }
