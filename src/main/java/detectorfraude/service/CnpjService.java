@@ -1,7 +1,7 @@
 package detectorfraude.service;
 
 import com.google.gson.Gson;
-import detectorfraude.model.ApiResponse;
+import detectorfraude.model.APIResponse;
 import detectorfraude.model.Empresa;
 
 import java.io.BufferedReader;
@@ -53,7 +53,7 @@ public class CnpjService {
 
                 // Aqui usamos o modelo APIResponse
                 Gson gson = new Gson();
-                ApiResponse apiResponse = gson.fromJson(jsonSB.toString(), ApiResponse.class);
+                APIResponse apiResponse = gson.fromJson(jsonSB.toString(), APIResponse.class);
 
                 Empresa empresa = new Empresa();
                 empresa.setRazaoSocial(apiResponse.getNome());

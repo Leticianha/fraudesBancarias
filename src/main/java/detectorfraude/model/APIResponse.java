@@ -2,7 +2,7 @@ package detectorfraude.model;
 
 import com.google.gson.annotations.SerializedName;
 
-public class ApiResponse {
+public class APIResponse {
 
     @SerializedName("nome")
     private String nome;
