@@ -15,7 +15,6 @@ public class CnpjService {
     private static final String BASE_URL = "https://www.receitaws.com.br/v1/cnpj/";
     private ValidacaoCNPJService validador;
 
-    // Construtor
     public CnpjService() {
         this.validador = new ValidacaoCNPJService();
     }
@@ -23,24 +22,29 @@ public class CnpjService {
     public Empresa consultarCnpj(String cnpj) {
         cnpj = cnpj.replaceAll("[^\\d]", "");
 
-        // Valida o CNPJ antes de consultar a API
         if (!validador.validarCNPJ(cnpj)) {
-            System.out.println("CNPJ inválido! Por favor, verifique e tente novamente.");
+            System.out.println("❌ CNPJ inválido.");
             return null;
         }
 
         try {
             String url = BASE_URL + cnpj;
 
-            URI uri = URI.create(url);
-            URL urlObj = uri.toURL();
-
-            HttpURLConnection conn = (HttpURLConnection) urlObj.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+            conn.setConnectTimeout(7000);
+            conn.setReadTimeout(7000);
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");
 
-            if (conn.getResponseCode() != 200) {
-                System.out.println("Erro na requisição. Código: " + conn.getResponseCode());
+            int status = conn.getResponseCode();
+
+            if (status == 429) {
+                System.out.println("⚠️ Limite de requisições excedido. Tente mais tarde.");
+                return null;
+            }
+
+            if (status != 200) {
+                System.out.println("Erro na requisição. Código: " + status);
                 return null;
             }
 
@@ -51,9 +55,7 @@ public class CnpjService {
                     jsonSB.append(output);
                 }
 
-                // Aqui usamos o modelo APIResponse
-                Gson gson = new Gson();
-                APIResponse apiResponse = gson.fromJson(jsonSB.toString(), APIResponse.class);
+                APIResponse apiResponse = new Gson().fromJson(jsonSB.toString(), APIResponse.class);
 
                 Empresa empresa = new Empresa();
                 empresa.setRazaoSocial(apiResponse.getNome());
@@ -64,10 +66,10 @@ public class CnpjService {
             } finally {
                 conn.disconnect();
             }
+
         } catch (Exception e) {
-            System.out.println("Erro ao consultar CNPJ: " + e.getMessage());
+            System.out.println("❌ Erro ao consultar CNPJ: " + e.getMessage());
             return null;
         }
-
     }
 }

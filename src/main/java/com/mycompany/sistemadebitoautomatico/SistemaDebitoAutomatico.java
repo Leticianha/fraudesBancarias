@@ -1,177 +1,83 @@
 package com.mycompany.sistemadebitoautomatico;
 
-import detectorfraude.model.Empresa;
+import detectorfraude.controller.DeteccaoFraudeController;
 import detectorfraude.model.DebitoAutomatico;
+import detectorfraude.model.Empresa;
+import detectorfraude.service.AnalisePadroesService;
 import detectorfraude.service.CnpjService;
-import detectorfraude.util.FormatacaoUtil;
-import detectorfraude.util.ConexaoMySQL;
-import detectorfraude.controller.*;
-import detectorfraude.model.*;
-import java.time.LocalDateTime;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.time.LocalDate;
+import detectorfraude.service.ValidacaoCNPJService;
 import java.math.BigDecimal;
-import java.util.Scanner;
+import java.util.List;
 
 public class SistemaDebitoAutomatico {
 
     public static void main(String[] args) {
-        System.out.println("\n===== Teste ConexaoMySQL =====");
-        try (Connection conexao = ConexaoMySQL.getConexao()) {
-            System.out.println("Conexão realizada com sucesso!");
-        } catch (SQLException ex) {
-            System.out.println("Erro ao conectar: " + ex.getMessage());
-        }
-
-        testarClienteController();
-        testarEmpresaController();
-        testarDebitoController();
-        testarAlertaController();
-        testarAcaoClienteController();
-        testarLogHistoricoController();
+        testarValidacaoCNPJService();
+        testarCnpjService();
+        testarAnalisePadroesService();
+        testarDeteccaoFraudeController();
     }
 
-    private static void testarClienteController() {
-        System.out.println("\n===== Teste ClienteController =====");
-        try (Connection connection = ConexaoMySQL.getConexao()) {
-            ClienteController controller = new ClienteController(connection);
-            int id = (int) (Math.random() * 9000 + 1000);
+    private static void testarValidacaoCNPJService() {
+        System.out.println("\n===== Teste ValidacaoCNPJService =====");
+        ValidacaoCNPJService validador = new ValidacaoCNPJService();
 
-            Cliente cliente = new Cliente(id, "Nat", "555.111.222-33");
-            controller.inserir(cliente);
+        String cnpjValido = "00623904000173";
+        String cnpjInvalido = "11111111111111";
 
-            Cliente buscado = controller.buscarPorId(id);
-            System.out.println("Buscado: " + buscado.getNome());
+        System.out.println("CNPJ válido? " + cnpjValido + ": " + validador.validarCNPJ(cnpjValido));
+        System.out.println("CNPJ válido? " + cnpjInvalido + ": " + validador.validarCNPJ(cnpjInvalido));
+    }
 
-            cliente.setNome("Nat Atualizada");
-            controller.atualizar(cliente);
+    private static void testarCnpjService() {
+        System.out.println("\n===== Teste CnpjService =====");
+        CnpjService service = new CnpjService();
 
-            controller.listarTodos().forEach(c -> System.out.println("Cliente: " + c.getNome()));
+        String cnpj = "27865757000102"; // Exemplo válido da Natura
+        Empresa empresa = service.consultarCnpj(cnpj);
 
-            /*controller.deletarPorId(id);*/
-            System.out.println("Cliente deletado com sucesso.");;
-        } catch (SQLException e) {
-            System.out.println("Erro: " + e.getMessage());
+        if (empresa != null) {
+            System.out.println("✔️ Empresa encontrada:");
+            System.out.println("Razão Social: " + empresa.getRazaoSocial());
+            System.out.println("CNPJ: " + empresa.getCnpj());
+            System.out.println("Situação: " + empresa.getSituacaoCadastral());
+        } else {
+            System.out.println("❌ Não foi possível obter os dados do CNPJ.");
         }
     }
 
-    private static void testarEmpresaController() {
-        System.out.println("\n===== Teste EmpresaController =====");
-        try (Connection connection = ConexaoMySQL.getConexao()) {
-            EmpresaController controller = new EmpresaController(connection);
+    private static void testarAnalisePadroesService() {
+        System.out.println("\n===== Teste AnalisePadroesService =====");
+        AnalisePadroesService service = new AnalisePadroesService();
 
-            Empresa empresa = new Empresa();
-            empresa.setNome("Empresa Swing");
-            empresa.setCnpj("00000000000000");
-            empresa.setCnpjValido(true);
-            controller.inserir(empresa);
+        DebitoAutomatico debito = new DebitoAutomatico();
+        debito.setClienteId(5467);
+        debito.setEmpresaId(2); // empresa inválida no banco
+        debito.setValor(new BigDecimal("20.00"));
+        debito.setTipoRecorrencia("Mensal");
 
-            Empresa ultima = controller.listarTodas().getLast();
-            Empresa buscada = controller.buscarPorId(ultima.getEmpresaId());
-            System.out.println("Buscada: " + buscada.getNome());
+        List<String> motivos = service.getMotivosSuspeita(debito);
 
-            buscada.setNome("Empresa Swing Atualizada");
-            controller.atualizar(buscada);
-
-            controller.deletarPorId(buscada.getEmpresaId());
-            System.out.println("Empresa deletada com sucesso.");
-        } catch (SQLException e) {
-            System.out.println("Erro: " + e.getMessage());
+        if (!motivos.isEmpty()) {
+            System.out.println("⚠️ Débito suspeito por:");
+            motivos.forEach(System.out::println);
+        } else {
+            System.out.println("✅ Débito considerado normal.");
         }
     }
 
-    private static void testarDebitoController() {
-        System.out.println("\n===== Teste DebitoController =====");
-        try (Connection connection = ConexaoMySQL.getConexao()) {
-            DebitoController controller = new DebitoController(connection);
+    private static void testarDeteccaoFraudeController() {
+        System.out.println("\n===== Teste DeteccaoFraudeController =====");
+        DeteccaoFraudeController controller = new DeteccaoFraudeController();
 
-            DebitoAutomatico d = new DebitoAutomatico();
-            d.setClienteId(5467);
-            d.setEmpresaId(1);
-            d.setValor(new BigDecimal("49.99"));
-            d.setDataCadastro(LocalDate.now());
-            d.setTipoRecorrencia("Mensal");
-            d.setStatusSuspeita("Normal");
-            d.setStatusAtivo("Ativo");
-            controller.inserir(d);
+        DebitoAutomatico debito = new DebitoAutomatico();
+        debito.setDebitoId(1); // precisa existir no banco!
+        debito.setClienteId(8759);
+        debito.setEmpresaId(2); // empresa inválida no banco
+        debito.setValor(new BigDecimal("20.00"));
+        debito.setTipoRecorrencia("Mensal");
 
-            DebitoAutomatico ultimo = controller.listarTodos().getLast();
-            ultimo.setValor(new BigDecimal("99.99"));
-            controller.atualizar(ultimo);
-
-            controller.deletarPorId(ultimo.getDebitoId());
-            System.out.println("Débito deletado com sucesso.");
-        } catch (SQLException e) {
-            System.out.println("Erro: " + e.getMessage());
-        }
-    }
-
-    private static void testarAlertaController() {
-        System.out.println("\n===== Teste AlertaController =====");
-        try (Connection connection = ConexaoMySQL.getConexao()) {
-            AlertaController controller = new AlertaController(connection);
-
-            Alerta alerta = new Alerta();
-            alerta.setDebitoId(1); // certifique-se de que exista
-            alerta.setDataAlerta(LocalDateTime.now());
-            alerta.setMensagem("Alerta Teste");
-            alerta.setStatusAlerta("Pendente");
-
-            int id = controller.inserir(alerta);
-            Alerta buscado = controller.buscarPorId(id);
-            System.out.println("Mensagem do alerta: " + buscado.getMensagem());
-
-            controller.deletarPorId(id);
-            System.out.println("Alerta deletado com sucesso.");
-        } catch (SQLException e) {
-            System.out.println("Erro: " + e.getMessage());
-        }
-    }
-
-    private static void testarAcaoClienteController() {
-        System.out.println("\n===== Teste AcaoClienteController =====");
-        try (Connection connection = ConexaoMySQL.getConexao()) {
-            AcaoClienteController controller = new AcaoClienteController(connection);
-
-            AcaoCliente acao = new AcaoCliente();
-            acao.setAlertaId(1); // alerta 1 precisa existir
-            acao.setClienteId(96); // cliente 8759 precisa existir
-            acao.setAcao("Ignorar");
-            acao.setDataAcao(LocalDateTime.now());
-            controller.inserir(acao);
-
-            AcaoCliente ultima = controller.listarTodos().getLast();
-            ultima.setAcao("Bloquear");
-            controller.atualizar(ultima);
-
-            controller.deletarPorId(ultima.getAcaoId());
-            System.out.println("Ação deletada com sucesso.");
-        } catch (SQLException e) {
-            System.out.println("Erro: " + e.getMessage());
-        }
-    }
-
-    private static void testarLogHistoricoController() {
-        System.out.println("\n===== Teste LogHistoricoController =====");
-        try (Connection connection = ConexaoMySQL.getConexao()) {
-            LogHistoricoController controller = new LogHistoricoController(connection);
-
-            LogHistorico log = new LogHistorico();
-            log.setClienteId(8759);
-            log.setDescricaoEvento("Teste Controller");
-            log.setDataEvento(LocalDateTime.now());
-            controller.inserir(log);
-
-            LogHistorico ultimo = controller.listarTodos().getLast();
-            ultimo.setDescricaoEvento("Log Atualizado");
-            controller.atualizar(ultimo);
-
-            controller.deletarPorId(ultimo.getLogId());
-            System.out.println("Log deletado com sucesso.");
-        } catch (SQLException e) {
-            System.out.println("Erro: " + e.getMessage());
-        }
+        controller.processarDebito(debito, "Denunciar");
     }
 
 }

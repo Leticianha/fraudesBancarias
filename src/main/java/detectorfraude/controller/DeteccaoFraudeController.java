@@ -13,6 +13,7 @@ import detectorfraude.util.ConexaoMySQL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class DeteccaoFraudeController {
 
@@ -23,27 +24,30 @@ public class DeteccaoFraudeController {
     }
 
     public void processarDebito(DebitoAutomatico debito, String acaoCliente) {
-        boolean suspeito = analiseService.analisarDebito(debito);
+        List<String> motivos = analiseService.getMotivosSuspeita(debito);
 
-        if (suspeito) {
+        if (!motivos.isEmpty()) {
+            String mensagemAlerta = String.join("\n", motivos);
+
             try (Connection connection = ConexaoMySQL.getConexao()) {
 
                 // 1. Gerar Alerta
                 Alerta alerta = new Alerta();
                 alerta.setDebitoId(debito.getDebitoId());
                 alerta.setDataAlerta(LocalDateTime.now());
-                alerta.setMensagem("Débito suspeito detectado");
+                alerta.setMensagem(mensagemAlerta);
                 alerta.setStatusAlerta("Pendente");
 
                 AlertaDAO alertaDAO = new AlertaDAO(connection);
-                int alertaId = alertaDAO.inserir(alerta);         // <-- Aqui pega o ID gerado
-                alerta.setAlertaId(alertaId);                     // <-- Atualiza o objeto alerta
-                System.out.println("🔔 Alerta gerado com sucesso!");
+                int alertaId = alertaDAO.inserir(alerta);
+                alerta.setAlertaId(alertaId);
+
+                System.out.println("🔔 Alerta gerado:\n" + mensagemAlerta);
 
                 // 2. Registrar Log
                 LogHistorico log = new LogHistorico();
                 log.setClienteId(debito.getClienteId());
-                log.setDescricaoEvento("Débito suspeito detectado e alerta gerado.");
+                log.setDescricaoEvento("Alerta de débito suspeito:\n" + mensagemAlerta);
                 log.setDataEvento(LocalDateTime.now());
 
                 LogHistoricoDAO logDAO = new LogHistoricoDAO(connection);
@@ -52,7 +56,7 @@ public class DeteccaoFraudeController {
 
                 // 3. Registrar Ação do Cliente
                 AcaoCliente acao = new AcaoCliente();
-                acao.setAlertaId(alerta.getAlertaId()); // ⚠️ É necessário atualizar esse ID
+                acao.setAlertaId(alertaId);
                 acao.setClienteId(debito.getClienteId());
                 acao.setAcao(acaoCliente); // "Denunciar", "Bloquear" ou "Ignorar"
                 acao.setDataAcao(LocalDateTime.now());
@@ -64,6 +68,7 @@ public class DeteccaoFraudeController {
             } catch (SQLException e) {
                 System.err.println("Erro ao processar débito suspeito: " + e.getMessage());
             }
+
         } else {
             System.out.println("✅ Débito considerado normal.");
         }

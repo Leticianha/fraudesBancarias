@@ -8,62 +8,58 @@ import detectorfraude.util.FuzzyMatchingUtil;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AnalisePadroesService {
 
-    private static final double LIMIAR_SIMILARIDADE = 0.85; // limite para nome parecido
+    private static final double LIMIAR_SIMILARIDADE = 0.85;
 
     public boolean analisarDebito(DebitoAutomatico debito) {
-        boolean suspeito = false;
+        return !getMotivosSuspeita(debito).isEmpty();
+    }
+
+    public List<String> getMotivosSuspeita(DebitoAutomatico debito) {
+        List<String> motivos = new ArrayList<>();
 
         try (Connection connection = ConexaoMySQL.getConexao()) {
             EmpresaDAO empresaDAO = new EmpresaDAO(connection);
             List<Empresa> empresas = empresaDAO.listarTodas();
 
-            // 1. Buscar a empresa do débito
-            Empresa empresaDoDebito = null;
-            for (Empresa e : empresas) {
-                if (e.getEmpresaId() == debito.getEmpresaId()) {
-                    empresaDoDebito = e;
-                    break;
-                }
-            }
+            Empresa empresaDoDebito = empresas.stream()
+                .filter(e -> e.getEmpresaId() == debito.getEmpresaId())
+                .findFirst()
+                .orElse(null);
 
             if (empresaDoDebito == null) {
-                System.out.println("Empresa do débito não encontrada.");
-                return false;
+                motivos.add("Empresa do débito não encontrada.");
+                return motivos;
             }
 
-            // 2. Verifica se o CNPJ é inválido
             if (!empresaDoDebito.isCnpjValido()) {
-                System.out.println("🚨 CNPJ inválido detectado.");
-                suspeito = true;
+                motivos.add("🚨 CNPJ inválido detectado.");
             }
 
-            // 3. Verifica similaridade de nome com outras empresas
             for (Empresa outra : empresas) {
                 if (outra.getEmpresaId() != empresaDoDebito.getEmpresaId()) {
-                    double similaridade = FuzzyMatchingUtil.calcularSimilaridade(empresaDoDebito.getNome(), outra.getNome());
+                    double similaridade = FuzzyMatchingUtil.calcularSimilaridade(
+                        empresaDoDebito.getNome(), outra.getNome());
                     if (similaridade >= LIMIAR_SIMILARIDADE) {
-                        System.out.println("🚨 Nome semelhante ao de outra empresa detectado: " + outra.getNome());
-                        suspeito = true;
+                        motivos.add("🚨 Nome semelhante ao de outra empresa: " + outra.getNome());
                         break;
                     }
                 }
             }
 
-            // 4. Verifica valor pequeno e recorrente
             if (debito.getValor().doubleValue() <= 50.00 &&
-                (debito.getTipoRecorrencia().equals("Mensal") || debito.getTipoRecorrencia().equals("Semanal"))) {
-                System.out.println("🚨 Débito com valor pequeno e recorrente.");
-                suspeito = true;
+                ("Mensal".equals(debito.getTipoRecorrencia()) || "Semanal".equals(debito.getTipoRecorrencia()))) {
+                motivos.add("🚨 Débito com valor pequeno e recorrente.");
             }
 
         } catch (SQLException e) {
-            System.err.println("Erro ao analisar débito: " + e.getMessage());
+            motivos.add("Erro ao analisar débito: " + e.getMessage());
         }
 
-        return suspeito;
+        return motivos;
     }
 }
