@@ -2,7 +2,6 @@ package detectorfraude.controller;
 
 import detectorfraude.dao.ClienteDAO;
 import detectorfraude.model.Cliente;
-import detectorfraude.util.ConexaoMySQL;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,22 +9,29 @@ import java.util.List;
 
 public class ClienteController {
 
-    public void cadastrarCliente(Cliente cliente) {
-        try (Connection connection = ConexaoMySQL.getConexao()) {
-            ClienteDAO dao = new ClienteDAO(connection);
-            dao.inserir(cliente);
-        } catch (SQLException e) {
-            System.err.println("Erro ao cadastrar cliente: " + e.getMessage());
-        }
+    private ClienteDAO clienteDAO;
+
+    public ClienteController(Connection connection) {
+        this.clienteDAO = new ClienteDAO(connection);
     }
 
-    public List<Cliente> listarClientes() {
-        try (Connection connection = ConexaoMySQL.getConexao()) {
-            ClienteDAO dao = new ClienteDAO(connection);
-            return dao.listarTodos();
-        } catch (SQLException e) {
-            System.err.println("Erro ao listar clientes: " + e.getMessage());
-            return null;
-        }
+    public void inserir(Cliente cliente) throws SQLException {
+        clienteDAO.inserir(cliente);
+    }
+
+    public List<Cliente> listarTodos() throws SQLException {
+        return clienteDAO.listarTodos();
+    }
+
+    public Cliente buscarPorId(int id) throws SQLException {
+        return clienteDAO.buscarPorId(id);
+    }
+
+    public void atualizar(Cliente cliente) throws SQLException {
+        clienteDAO.atualizar(cliente);
+    }
+
+    public void deletarPorId(int id) throws SQLException {
+        clienteDAO.deletarPorId(id);
     }
 }
