@@ -8,7 +8,11 @@ public class Alerta {
     private int debitoId;
     private LocalDateTime dataAlerta;
     private String mensagem;
-    private String statusAlerta;
+    private StatusAlerta status;
+
+    // Dados auxiliares (não salvos no banco, mas usados para lógica interna)
+    private Cliente cliente;
+    private DebitoAutomatico debitoAutomatico;
 
     // Getters e Setters
     public int getAlertaId() {
@@ -43,22 +47,40 @@ public class Alerta {
         this.mensagem = mensagem;
     }
 
-    public String getStatusAlerta() {
-        return statusAlerta;
+    public StatusAlerta getStatus() {
+        return status;
     }
 
-    public void setStatusAlerta(String statusAlerta) {
-        this.statusAlerta = statusAlerta;
+    public void setStatus(StatusAlerta status) {
+        this.status = status;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public DebitoAutomatico getDebitoAutomatico() {
+        return debitoAutomatico;
+    }
+
+    public void setDebitoAutomatico(DebitoAutomatico debitoAutomatico) {
+        this.debitoAutomatico = debitoAutomatico;
     }
 
     @Override
     public String toString() {
-        return "Alerta{"
-                + "alertaId=" + alertaId
-                + ", debitoId=" + debitoId
-                + ", dataAlerta=" + dataAlerta
-                + ", mensagem='" + mensagem + '\''
-                + ", statusAlerta='" + statusAlerta + '\''
-                + '}';
+        return "Alerta{" +
+                "alertaId=" + alertaId +
+                ", debitoId=" + debitoId +
+                ", dataAlerta=" + dataAlerta +
+                ", mensagem='" + mensagem + '\'' +
+                ", status=" + status +
+                ", cliente=" + (cliente != null ? cliente.getNome() : "null") +
+                ", debito=" + (debitoAutomatico != null ? debitoAutomatico.getValor() : "null") +
+                '}';
     }
 }

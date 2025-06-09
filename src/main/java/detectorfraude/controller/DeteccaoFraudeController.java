@@ -7,9 +7,10 @@ import detectorfraude.model.Alerta;
 import detectorfraude.model.AcaoCliente;
 import detectorfraude.model.DebitoAutomatico;
 import detectorfraude.model.LogHistorico;
+import detectorfraude.model.StatusAlerta;
 import detectorfraude.service.AnalisePadroesService;
 import detectorfraude.util.ConexaoMySQL;
-
+        
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -36,7 +37,7 @@ public class DeteccaoFraudeController {
                 alerta.setDebitoId(debito.getDebitoId());
                 alerta.setDataAlerta(LocalDateTime.now());
                 alerta.setMensagem(mensagemAlerta);
-                alerta.setStatusAlerta("Pendente");
+                alerta.setStatus(StatusAlerta.Pendente); 
 
                 AlertaDAO alertaDAO = new AlertaDAO(connection);
                 int alertaId = alertaDAO.inserir(alerta);
