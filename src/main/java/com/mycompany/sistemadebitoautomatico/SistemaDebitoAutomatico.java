@@ -1,17 +1,28 @@
 package com.mycompany.sistemadebitoautomatico;
 
+import detectorfraude.controller.ClienteController;
+import detectorfraude.model.Cliente;
 import detectorfraude.util.ConexaoMySQL;
+import detectorfraude.view.TelaRoute;
 import java.sql.Connection;
-import java.sql.SQLException;
+
 
 public class SistemaDebitoAutomatico {
 
     public static void main(String[] args) {
-        System.out.println("\n===== Teste ConexaoMySQL =====");
-        try (Connection conexao = ConexaoMySQL.getConexao()) {
-            System.out.println("Conexão realizada com sucesso!");
-        } catch (SQLException ex) {
-            System.out.println("Erro ao conectar: " + ex.getMessage());
+        try (Connection conn = ConexaoMySQL.getConexao()) {
+
+            ClienteController clienteController = new ClienteController(conn);
+            Cliente cliente = clienteController.buscarPorId(8759); // ou outro cliente do banco
+
+            if (cliente != null) {
+                new TelaRoute(cliente).setVisible(true);
+            } else {
+                System.out.println("Cliente não encontrado.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+    } 
     }
-}
