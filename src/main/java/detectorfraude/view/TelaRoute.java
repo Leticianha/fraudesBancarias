@@ -1,16 +1,10 @@
 package detectorfraude.view;
 
 import detectorfraude.model.Cliente;
-import detectorfraude.model.Cliente;
-import javax.swing.JOptionPane;
-import detectorfraude.view.TelaExtratoDebitos;
-import detectorfraude.view.TelaHistorico;
-import detectorfraude.view.TelaConsultaEmpresa;
 
 public class TelaRoute extends javax.swing.JFrame {
 
-
-private Cliente cliente;
+    private Cliente cliente;
 
     public TelaRoute(Cliente cliente) {
         this.cliente = cliente;
@@ -19,11 +13,7 @@ private Cliente cliente;
         setLocationRelativeTo(null);
     }
 
- 
-    
     @SuppressWarnings("unchecked")
- 
-    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -55,11 +45,21 @@ private Cliente cliente;
         btnConsulta.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnConsulta.setForeground(new java.awt.Color(255, 255, 255));
         btnConsulta.setText("Consulta");
+        btnConsulta.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConsultaActionPerformed(evt);
+            }
+        });
 
         btnHistorico.setBackground(new java.awt.Color(204, 0, 0));
         btnHistorico.setFont(new java.awt.Font("Malgun Gothic", 1, 12)); // NOI18N
         btnHistorico.setForeground(new java.awt.Color(255, 255, 255));
         btnHistorico.setText("Histórico");
+        btnHistorico.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnHistoricoActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -93,22 +93,20 @@ private Cliente cliente;
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnExtratoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExtratoActionPerformed
-        // TODO add your handling code here:
-        TelaExtratoDebitos tela = new TelaExtratoDebitos(this, cliente);
+        TelaExtrato tela = new TelaExtrato(this, cliente);
         tela.setVisible(true);
     }//GEN-LAST:event_btnExtratoActionPerformed
-   
-    private void btnHistoricoActionPerformed(java.awt.event.ActionEvent evt) {
-        TelaHistorico tela = new TelaHistorico(this, cliente);
-        tela.setVisible(true);
-    }
 
-    private void btnConsultaActionPerformed(java.awt.event.ActionEvent evt) {
-        TelaConsultaEmpresa tela = new TelaConsultaEmpresa(this);
+    private void btnHistoricoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHistoricoActionPerformed
+        TelaConsultaExtrato tela = new TelaConsultaExtrato(this, cliente);
         tela.setVisible(true);
-    }
-  
-    
+    }//GEN-LAST:event_btnHistoricoActionPerformed
+
+    private void btnConsultaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConsultaActionPerformed
+        TelaConsultaDocumento tela = new TelaConsultaDocumento(this);
+        tela.setVisible(true);
+    }//GEN-LAST:event_btnConsultaActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnConsulta;
