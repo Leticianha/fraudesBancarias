@@ -24,6 +24,20 @@
             <artifactId>json</artifactId>
             <version>20240303</version>
         </dependency>
+        
+        <dependency>
+            <groupId>com.google.appengine</groupId>
+            <artifactId>geronimo-javamail_1.4_spec</artifactId>
+            <version>1.4.4-2.0.36</version>
+            <type>jar</type>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+
     </dependencies>
     
     <properties>
@@ -39,6 +53,16 @@
                 <version>3.1.0</version>
                 <configuration>
                     <mainClass>com.mycompany.sistemadebitoautomatico.SistemaDebitoAutomatico</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>--enable-preview</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
         </plugins>

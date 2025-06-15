@@ -1,17 +1,22 @@
 package detectorfraude.view;
 
 import detectorfraude.model.Cliente;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class TelaRoute extends javax.swing.JFrame {
 
     private Cliente cliente;
+    private Connection conn;
 
-    public TelaRoute(Cliente cliente) {
+    public TelaRoute(Cliente cliente,Connection _conn) {
         this.cliente = cliente;
         initComponents();
         setTitle("Sistema de Débito Automático Fraudulento");
         setLocationRelativeTo(null);
+        conn = _conn;
     }
+
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -98,8 +103,13 @@ public class TelaRoute extends javax.swing.JFrame {
     }//GEN-LAST:event_btnExtratoActionPerformed
 
     private void btnHistoricoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHistoricoActionPerformed
-        TelaConsultaExtrato tela = new TelaConsultaExtrato(this, cliente);
-        tela.setVisible(true);
+         TelaConsultaExtrato tela;
+        try {
+            tela = new TelaConsultaExtrato(this, cliente,conn);
+             tela.setVisible(true);
+        } catch (SQLException ex) {
+            System.getLogger(TelaRoute.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
     }//GEN-LAST:event_btnHistoricoActionPerformed
 
     private void btnConsultaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConsultaActionPerformed

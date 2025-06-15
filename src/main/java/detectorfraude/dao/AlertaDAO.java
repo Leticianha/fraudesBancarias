@@ -39,8 +39,7 @@ public class AlertaDAO {
     public List<Alerta> listarTodos() throws SQLException {
         List<Alerta> alertas = new ArrayList<>();
         String sql = "SELECT * FROM Alerta";
-        try (PreparedStatement stmt = connection.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 Alerta a = new Alerta();
@@ -58,25 +57,22 @@ public class AlertaDAO {
         return alertas;
     }
 
-    public Alerta buscarPorId(int id) throws SQLException {
+    public Alerta buscarPorId(int alertaId) throws SQLException {
         String sql = "SELECT * FROM Alerta WHERE alerta_id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, id);
 
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, alertaId);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    Alerta a = new Alerta();
-                    a.setAlertaId(rs.getInt("alerta_id"));
-                    a.setDebitoId(rs.getInt("debito_id"));
-                    a.setDataAlerta(rs.getTimestamp("data_alerta").toLocalDateTime());
-                    a.setMensagem(rs.getString("mensagem"));
-                    a.setStatus(StatusAlerta.valueOf(rs.getString("status_alerta")));
-                    return a;
+                    Alerta alerta = new Alerta();
+                    alerta.setAlertaId(rs.getInt("alerta_id"));
+                    alerta.setDebitoId(rs.getInt("debito_id"));
+                    alerta.setDataAlerta(rs.getTimestamp("data_alerta").toLocalDateTime());
+                    alerta.setMensagem(rs.getString("mensagem"));
+                    alerta.setStatus(StatusAlerta.valueOf(rs.getString("status_alerta")));
+                    return alerta;
                 }
             }
-
-        } catch (SQLException e) {
-            throw new SQLException("Erro ao buscar alerta: " + e.getMessage(), e);
         }
 
         return null;
@@ -132,4 +128,33 @@ public class AlertaDAO {
             throw new SQLException("Erro ao atualizar alerta: " + e.getMessage(), e);
         }
     }
+
+    public void atualizarStatus(int alertaId, StatusAlerta statusAlerta) throws SQLException {
+        String sql = "UPDATE Alerta SET status_alerta = ? WHERE alerta_id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, statusAlerta.name()); // Usa o nome do enum como texto
+            stmt.setInt(2, alertaId);
+            stmt.executeUpdate();
+        }
+    }
+
+    public int buscarClienteIdPorAlertaId(int alertaId) throws SQLException {
+        String sql = "SELECT c.cliente_id FROM Alerta a "
+                + "JOIN Debito_Automatico d ON a.debito_id = d.debito_id "
+                + "JOIN Cliente c ON d.cliente_id = c.cliente_id "
+                + "WHERE a.alerta_id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, alertaId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("cliente_id");
+                } else {
+                    throw new SQLException("Cliente não encontrado para o alerta " + alertaId);
+                }
+            }
+        }
+    }
+
 }
