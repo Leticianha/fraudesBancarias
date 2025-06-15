@@ -7,7 +7,6 @@ import detectorfraude.model.Empresa;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
 
 public class CnpjService {
@@ -61,8 +60,18 @@ public class CnpjService {
                 empresa.setRazaoSocial(apiResponse.getNome());
                 empresa.setCnpj(apiResponse.getCnpj());
                 empresa.setSituacaoCadastral(apiResponse.getSituacao());
+                empresa.setNomeFantasia(apiResponse.getFantasia());
+                empresa.setNaturezaJuridica(apiResponse.getNaturezaJuridica());
+                empresa.setTipoEmpresa(apiResponse.getTipo());
+
+                if (apiResponse.getAtividadePrincipal() != null && !apiResponse.getAtividadePrincipal().isEmpty()) {
+                    empresa.setAtividadeEconomica(apiResponse.getAtividadePrincipal().get(0).toString());
+                }
+
+                empresa.setEndereco(apiResponse.getLogradouro());
 
                 return empresa;
+
             } finally {
                 conn.disconnect();
             }
