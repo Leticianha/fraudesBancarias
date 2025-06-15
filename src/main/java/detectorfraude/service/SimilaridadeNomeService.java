@@ -12,11 +12,14 @@ public class SimilaridadeNomeService {
     private static final double LIMIAR_SIMILARIDADE = 0.75;
 
     /**
-     * Verifica se dois nomes são considerados semelhantes com base no limiar definido.
+     * Verifica se dois nomes são considerados semelhantes com base no limiar
+     * definido.
      *
      * @param nome1 Primeiro nome (ex: nome no débito automático)
-     * @param nome2 Segundo nome (ex: nome oficial da empresa consultado via CNPJ)
-     * @return true se os nomes forem suficientemente semelhantes, false caso contrário
+     * @param nome2 Segundo nome (ex: nome oficial da empresa consultado via
+     * CNPJ)
+     * @return true se os nomes forem suficientemente semelhantes, false caso
+     * contrário
      */
     public boolean nomesSaoSimilares(String nome1, String nome2) {
         double similaridade = FuzzyMatchingUtil.calcularSimilaridade(nome1, nome2);
@@ -24,7 +27,8 @@ public class SimilaridadeNomeService {
     }
 
     /**
-     * Retorna o índice numérico de similaridade entre dois nomes, variando de 0.0 a 1.0.
+     * Retorna o índice numérico de similaridade entre dois nomes, variando de
+     * 0.0 a 1.0.
      *
      * @param nome1 Primeiro nome
      * @param nome2 Segundo nome

@@ -1,28 +1,51 @@
 package com.mycompany.sistemadebitoautomatico;
 
-import detectorfraude.controller.ClienteController;
-import detectorfraude.model.Cliente;
+import detectorfraude.controller.DeteccaoFraudeController;
+import detectorfraude.dao.DebitoAutomaticoDAO;
+import detectorfraude.model.DebitoAutomatico;
+import detectorfraude.service.AnalisePadroesService;
 import detectorfraude.util.ConexaoMySQL;
-import detectorfraude.view.TelaRoute;
-import java.sql.Connection;
 
+import java.sql.Connection;
+import java.util.List;
 
 public class SistemaDebitoAutomatico {
 
     public static void main(String[] args) {
-        try (Connection conn = ConexaoMySQL.getConexao()) {
+        try (Connection connection = ConexaoMySQL.getConexao()) {
 
-            ClienteController clienteController = new ClienteController(conn);
-            Cliente cliente = clienteController.buscarPorId(8759); // ou outro cliente do banco
+            // 1. Busca todos os débitos existentes no banco
+            DebitoAutomaticoDAO dao = new DebitoAutomaticoDAO(connection);
+            List<DebitoAutomatico> debitos = dao.listarTodos();
 
-            if (cliente != null) {
-                new TelaRoute(cliente).setVisible(true);
-            } else {
-                System.out.println("Cliente não encontrado.");
+            if (debitos.isEmpty()) {
+                System.out.println("❌ Nenhum débito automático cadastrado no banco.");
+                return;
             }
 
+            System.out.println("🔎 Iniciando análise de débitos automáticos...\n");
+
+            // 2. Passa cada débito pelo processo de análise
+            AnalisePadroesService analiseService = new AnalisePadroesService();
+            DeteccaoFraudeController deteccaoController = new DeteccaoFraudeController();
+
+            for (DebitoAutomatico debito : debitos) {
+                System.out.println("🧾 Analisando débito ID " + debito.getDebitoId() + "...");
+                boolean suspeito = analiseService.analisarDebito(debito);
+
+                if (suspeito) {
+                    // Simula ação do cliente após alerta
+                    String acaoCliente = "Denunciar"; // Você pode testar "Bloquear" ou "Ignorar" também
+                    deteccaoController.processarDebito(debito, acaoCliente);
+                } else {
+                    System.out.println("✅ Débito considerado normal.\n");
+                }
+            }
+
+            System.out.println("✅ Análise concluída.");
+
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("❌ Erro ao executar o sistema: " + e.getMessage());
         }
-    } 
     }
+}

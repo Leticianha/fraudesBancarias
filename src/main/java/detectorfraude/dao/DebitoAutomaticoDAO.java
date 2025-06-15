@@ -96,4 +96,14 @@ public class DebitoAutomaticoDAO {
             stmt.executeUpdate();
         }
     }
+
+    public void atualizarStatusSuspeita(int debitoId, String novoStatus) throws SQLException {
+        String sql = "UPDATE Debito_Automatico SET status_suspeita = ? WHERE debito_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, novoStatus);
+            stmt.setInt(2, debitoId);
+            stmt.executeUpdate();
+        }
+    }
+
 }
