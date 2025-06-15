@@ -158,7 +158,7 @@
           <Color blue="e0" green="e0" red="e0" type="rgb"/>
         </Property>
         <Property name="horizontalAlignment" type="int" value="0"/>
-        <Property name="text" type="java.lang.String" value="Consulta de Documento"/>
+        <Property name="text" type="java.lang.String" value="Consulta de CNPJ"/>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
     </Component>

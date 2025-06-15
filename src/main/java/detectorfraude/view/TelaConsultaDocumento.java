@@ -51,7 +51,7 @@ public class TelaConsultaDocumento extends javax.swing.JFrame {
         jLabel2.setFont(new java.awt.Font("Malgun Gothic", 1, 18)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(224, 224, 224));
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("Consulta de Documento");
+        jLabel2.setText("Consulta de CNPJ");
         jLabel2.setOpaque(true);
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
