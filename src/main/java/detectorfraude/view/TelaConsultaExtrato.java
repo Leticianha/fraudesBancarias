@@ -1,29 +1,48 @@
 package detectorfraude.view;
 
-import detectorfraude.dao.EmpresaDAO;
 import detectorfraude.model.Cliente;
-import detectorfraude.model.Empresa;
 import java.sql.Connection;
 import java.sql.SQLException;
+import detectorfraude.dao.ExtratoDAO;
 import java.util.List;
+import detectorfraude.model.ExtratoDTO;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.text.SimpleDateFormat;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import detectorfraude.view.BarraProgressoDuplo;
+import java.awt.Color;
 
 public class TelaConsultaExtrato extends javax.swing.JFrame {
 
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(TelaConsultaExtrato.class.getName());
-
-    private final Cliente cliente;
-    private final List<Empresa> empresas;
-    private final Connection conn;
+    private Cliente cliente;
+    private Connection conn;
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    private BarraProgressoDuplo barraProgressoDuplo;
 
     public TelaConsultaExtrato(java.awt.Frame parent, Cliente cliente, Connection _conn) throws SQLException {
         initComponents();
+        this.cliente = cliente;
+        this.conn = _conn;
+
+        BarraProgressoDuplo barra = new BarraProgressoDuplo();
+        barra.setPreferredSize(new Dimension(200, 20));
+        painelGrafico.setLayout(new BorderLayout());
+        painelGrafico.add(barra, BorderLayout.CENTER);
+
+        // Guarde esta barra numa variável da sua classe para atualizar depois
+        this.barraProgressoDuplo = barra;
+
+        // Popula a tabela inicialmente com apenas Denunciado e Bloqueado
+        carregarExtrato();
+
         JTableHeader header = tabelaHistorico.getTableHeader();
-        header.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 16)); // Fonte em negrito
-        header.setBackground(new java.awt.Color(241, 229, 235)); // Fundo cinza escuro
-        header.setForeground(java.awt.Color.BLACK); // Letras brancas
-        
+        header.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 16));
+        header.setBackground(new java.awt.Color(241, 229, 235));
+        header.setForeground(java.awt.Color.BLACK);
+
         tabelaHistorico.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
             @Override
             public java.awt.Component getTableCellRendererComponent(
@@ -42,35 +61,115 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
                         setForeground(java.awt.Color.BLACK);
                     }
                 }
+
+                if (column == 4 && value != null) {
+                    String status = value.toString();
+                    if (status.equalsIgnoreCase("Denunciado")) {
+                        setForeground(new java.awt.Color(112, 47, 138)); // Roxo
+                    } else if (status.equalsIgnoreCase("Bloqueado")) {
+                        setForeground(new java.awt.Color(255, 0, 0)); // Vermelho
+                    }
+                }
+
                 return this;
             }
         });
-        
-        this.cliente = cliente;
-        setLocationRelativeTo(parent);
-        conn = _conn;
-        EmpresaDAO dao = new EmpresaDAO(conn);
-        empresas = dao.listarTodas();
-        preencherTabelaEmpresas();
     }
 
-    private void preencherTabelaEmpresas() {
-        String[] colunas = {"Empresa", "CNPJ", "Cobrança", "Data", "Status"};
-        Object[][] dados = new Object[empresas.size()][colunas.length];
+    // Método que carrega só Denunciado e Bloqueado na tabela
+    private void carregarExtrato() {
+        ExtratoDAO extratoDAO = new ExtratoDAO();
+        List<ExtratoDTO> extratos = extratoDAO.listarExtratoPorCliente(cliente.getClienteId(), conn);
 
-        for (int i = 0; i < empresas.size(); i++) {
-            Empresa e = empresas.get(i);
-            dados[i][0] = e.getNome();
-            dados[i][3] = e.getCnpj();
+        DefaultTableModel model = (DefaultTableModel) tabelaHistorico.getModel();
+        model.setRowCount(0);
 
+        int countDenunciados = 0;
+        int countBloqueados = 0;
+
+        for (ExtratoDTO extrato : extratos) {
+            String status = extrato.getStatusAcao();
+
+            // Considera só Denunciado e Bloqueado
+            if (status.equalsIgnoreCase("Denunciado") || status.equalsIgnoreCase("Bloqueado")) {
+                if (status.equalsIgnoreCase("Denunciado")) {
+                    countDenunciados++;
+                } else if (status.equalsIgnoreCase("Bloqueado")) {
+                    countBloqueados++;
+                }
+
+                model.addRow(new Object[]{
+                    extrato.getNomeEmpresa(),
+                    extrato.getCnpj(),
+                    String.format("R$ %.2f", extrato.getValor()),
+                    sdf.format(extrato.getData()),
+                    status
+                });
+            }
         }
 
-        tabelaHistorico.setModel(new javax.swing.table.DefaultTableModel(dados, colunas) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Nenhuma célula será editável
+        lblDenunciados.setText("Débitos denunciados: " + String.format("%02d", countDenunciados));
+        lblBloqueados.setText("Débitos bloqueados: " + String.format("%02d", countBloqueados));
+
+        int total = countDenunciados + countBloqueados;
+        if (total == 0) {
+            total = 1; // evita divisão por zero
+        }
+
+        barraProgressoDuplo.setValores(countDenunciados, countBloqueados);
+    }
+
+    private void filtrarExtratoPorStatus(String statusFiltro) {
+        ExtratoDAO extratoDAO = new ExtratoDAO();
+        List<ExtratoDTO> extratos = extratoDAO.listarExtratoPorCliente(cliente.getClienteId(), conn);
+
+        DefaultTableModel model = (DefaultTableModel) tabelaHistorico.getModel();
+        model.setRowCount(0);
+
+        int countDenunciados = 0;
+        int countBloqueados = 0;
+
+        for (ExtratoDTO extrato : extratos) {
+            String status = extrato.getStatusAcao();
+
+            // Só considera Denunciado e Bloqueado, ignora Pendente e Ignorado
+            if (!(status.equalsIgnoreCase("Denunciado") || status.equalsIgnoreCase("Bloqueado"))) {
+                continue;
             }
-        });
+
+            boolean incluir = false;
+
+            if ("Status".equals(statusFiltro)) {
+                incluir = true; // mostrar tudo que seja Denunciado ou Bloqueado
+            } else if (status.equalsIgnoreCase(statusFiltro)) {
+                incluir = true;
+            }
+
+            if (incluir) {
+                if (status.equalsIgnoreCase("Denunciado")) {
+                    countDenunciados++;
+                } else if (status.equalsIgnoreCase("Bloqueado")) {
+                    countBloqueados++;
+                }
+
+                model.addRow(new Object[]{
+                    extrato.getNomeEmpresa(),
+                    extrato.getCnpj(),
+                    String.format("R$ %.2f", extrato.getValor()),
+                    sdf.format(extrato.getData()),
+                    status
+                });
+            }
+        }
+
+        lblDenunciados.setText("Débitos denunciados: " + countDenunciados);
+        lblBloqueados.setText("Débitos bloqueados: " + countBloqueados);
+        int total = countDenunciados + countBloqueados;
+        if (total == 0) {
+            total = 1; // para evitar divisão por zero
+        }
+
+        barraProgressoDuplo.setValores(countDenunciados, countBloqueados);
     }
 
     @SuppressWarnings("unchecked")
@@ -79,12 +178,11 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
 
         jLabel1 = new javax.swing.JLabel();
         jComboBox1 = new javax.swing.JComboBox<>();
-        jComboBox2 = new javax.swing.JComboBox<>();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
-        jProgressBar1 = new javax.swing.JProgressBar();
+        lblBloqueados = new javax.swing.JLabel();
+        lblDenunciados = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tabelaHistorico = new javax.swing.JTable();
+        painelGrafico = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -95,22 +193,19 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
         jLabel1.setText("Relatório de extrato");
         jLabel1.setOpaque(true);
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Status", "Denunciado", "Suspeito", " " }));
+        jComboBox1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Status", "Denunciado", "Bloqueado" }));
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox1ActionPerformed(evt);
             }
         });
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Data" }));
+        lblBloqueados.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lblBloqueados.setText("Débitos bloqueados");
 
-        jLabel7.setText("Débitos bloqueados");
-
-        jLabel8.setText("Débitos denunciados");
-
-        jProgressBar1.setBackground(new java.awt.Color(204, 0, 0));
-        jProgressBar1.setForeground(new java.awt.Color(255, 255, 255));
-        jProgressBar1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        lblDenunciados.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        lblDenunciados.setText("Débitos denunciados");
 
         tabelaHistorico.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -141,6 +236,19 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
             tabelaHistorico.getColumnModel().getColumn(4).setResizable(false);
         }
 
+        painelGrafico.setBackground(new java.awt.Color(153, 153, 153));
+
+        javax.swing.GroupLayout painelGraficoLayout = new javax.swing.GroupLayout(painelGrafico);
+        painelGrafico.setLayout(painelGraficoLayout);
+        painelGraficoLayout.setHorizontalGroup(
+            painelGraficoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
+        );
+        painelGraficoLayout.setVerticalGroup(
+            painelGraficoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 20, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -149,21 +257,16 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 731, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(14, 14, 14)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGap(15, 15, 15)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(116, 116, 116)
-                                .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 700, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGap(8, 8, 8)
-                                .addComponent(jLabel7)
-                                .addGap(231, 231, 231)
-                                .addComponent(jLabel8)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(53, 53, 53)))))
+                                .addComponent(lblBloqueados)
+                                .addGap(90, 90, 90)
+                                .addComponent(lblDenunciados)
+                                .addGap(90, 90, 90)
+                                .addComponent(painelGrafico, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 700, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -171,18 +274,16 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(39, 39, 39)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel7)
-                        .addComponent(jLabel8))
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(50, Short.MAX_VALUE))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblBloqueados)
+                        .addComponent(lblDenunciados))
+                    .addComponent(painelGrafico, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(86, Short.MAX_VALUE))
         );
 
         pack();
@@ -190,6 +291,8 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
 
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
         // TODO add your handling code here:
+        String statusSelecionado = (String) jComboBox1.getSelectedItem();
+        filtrarExtratoPorStatus(statusSelecionado);
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     public static void main(String args[]) {
@@ -220,12 +323,11 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblBloqueados;
+    private javax.swing.JLabel lblDenunciados;
+    private javax.swing.JPanel painelGrafico;
     private javax.swing.JTable tabelaHistorico;
     // End of variables declaration//GEN-END:variables
 }

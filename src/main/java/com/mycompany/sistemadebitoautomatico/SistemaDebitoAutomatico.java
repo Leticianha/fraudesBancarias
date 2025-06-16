@@ -14,7 +14,7 @@ public class SistemaDebitoAutomatico {
             conn = ConexaoMySQL.getConexao();
 
             ClienteController clienteController = new ClienteController(conn);
-            Cliente cliente = clienteController.buscarPorId(96);
+            Cliente cliente = clienteController.buscarPorId(1);
 
             if (cliente != null) {
                 new TelaRoute(cliente, conn).setVisible(true);
