@@ -179,16 +179,26 @@ public class TelaAlertaCliente extends javax.swing.JFrame {
             Empresa empresa = empresaDAO.buscarPorId(debito.getEmpresaId());
 
             String emailDestino = "leituraamanda9@gmail.com";
-            String assunto = "🚨 Denúncia de Débito Automático - ID " + debitoId;
-            String mensagem = "O cliente " + cliente.getNome()
-                    + " (ID: " + cliente.getClienteId() + ", E-mail: " + cliente.getEmail() + ") "
-                    + "denunciou o débito automático suspeito.\n\n"
-                    + "🔸 Empresa: " + empresa.getNome() + "\n"
-                    + "🔸 CNPJ: " + empresa.getCnpj() + "\n"
-                    + "🔸 Situação Cadastral: "
-                    + (empresa.getSituacaoCadastral() != null ? empresa.getSituacaoCadastral() : "Não disponível") + "\n"
-                    + "🔸 Débito ID: " + debitoId + "\n\n"
-                    + "Essa denúncia foi registrada automaticamente pelo sistema.";
+            String assunto = "🚨 Denúncia de Débito Automático - ID: " + debitoId;
+            String mensagem = String.format(
+                    "Prezados,%n%n"
+                    + "O cliente %s (ID: %d, E-mail: %s) efetuou uma denúncia referente a um débito automático suspeito.%n%n"
+                    + "Detalhes da denúncia:%n%n"
+                    + "- Empresa: %s%n"
+                    + "- CNPJ: %s%n"
+                    + "- Situação Cadastral: %s%n"
+                    + "- ID do Débito: %d%n%n"
+                    + "Esta denúncia foi registrada automaticamente pelo sistema de detecção de fraudes bancárias para análise e providências cabíveis.%n%n"
+                    + "Atenciosamente,%n"
+                    + "Equipe de Monitoramento de Fraudes",
+                    cliente.getNome(),
+                    cliente.getClienteId(),
+                    cliente.getEmail(),
+                    empresa.getNome(),
+                    empresa.getCnpj(),
+                    (empresa.getSituacaoCadastral() != null ? empresa.getSituacaoCadastral() : "Não disponível (CNPJ inválido ou suspeito)"),
+                    debitoId
+            );
 
             EmailService.enviarEmail(emailDestino, assunto, mensagem);
 
