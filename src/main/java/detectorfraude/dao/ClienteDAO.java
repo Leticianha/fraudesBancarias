@@ -14,11 +14,12 @@ public class ClienteDAO {
     }
 
     public void inserir(Cliente cliente) throws SQLException {
-        String sql = "INSERT INTO Cliente (cliente_id, nome, cpf) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO Cliente (cliente_id, nome, cpf, email) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, cliente.getClienteId());
             stmt.setString(2, cliente.getNome());
             stmt.setString(3, cliente.getCpf());
+            stmt.setString(4, cliente.getEmail());
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new SQLException("Erro ao inserir cliente: " + e.getMessage(), e);
@@ -45,6 +46,7 @@ public class ClienteDAO {
 
     public Cliente buscarPorId(int id) throws SQLException {
         String sql = "SELECT * FROM Cliente WHERE cliente_id = ?";
+
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -53,6 +55,7 @@ public class ClienteDAO {
                     cliente.setClienteId(rs.getInt("cliente_id"));
                     cliente.setNome(rs.getString("nome"));
                     cliente.setCpf(rs.getString("cpf"));
+                    cliente.setEmail(rs.getString("email")); // Só se você tiver esse campo no banco
                     return cliente;
                 }
             }
@@ -61,11 +64,12 @@ public class ClienteDAO {
     }
 
     public void atualizar(Cliente cliente) throws SQLException {
-        String sql = "UPDATE Cliente SET nome = ?, cpf = ? WHERE cliente_id = ?";
+        String sql = "UPDATE Cliente SET nome = ?, cpf = ?, email = ? WHERE cliente_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, cliente.getNome());
             stmt.setString(2, cliente.getCpf());
-            stmt.setInt(3, cliente.getClienteId());
+            stmt.setString(3, cliente.getEmail());
+            stmt.setInt(4, cliente.getClienteId());
             stmt.executeUpdate();
         }
     }

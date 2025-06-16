@@ -1,29 +1,15 @@
 package detectorfraude.view;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import detectorfraude.dao.AcaoClienteDAO;
-import detectorfraude.dao.AlertaDAO;
-import detectorfraude.dao.DebitoAutomaticoDAO;
-import detectorfraude.dao.LogHistoricoDAO;
-import detectorfraude.model.AcaoCliente;
-import detectorfraude.model.Alerta;
-import detectorfraude.model.LogHistorico;
-import detectorfraude.model.StatusAlerta;
-import detectorfraude.util.ConexaoMySQL;
-import detectorfraude.dao.EmpresaDAO;
-import detectorfraude.model.Cliente;
-import detectorfraude.model.DebitoAutomatico;
-import detectorfraude.model.Empresa;
+import detectorfraude.dao.*;
+import detectorfraude.model.*;
 import detectorfraude.service.EmailService;
+import detectorfraude.util.ConexaoMySQL;
 
+import javax.swing.*;
 import java.sql.Connection;
 import java.time.LocalDateTime;
-import java.util.Properties;
-import javax.mail.*;
-import javax.mail.internet.*;
-import javax.swing.JOptionPane;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TelaAlertaCliente extends javax.swing.JFrame {
 
@@ -40,13 +26,14 @@ public class TelaAlertaCliente extends javax.swing.JFrame {
     private void carregarMensagemAlerta() {
         try (Connection connection = ConexaoMySQL.getConexao()) {
             AlertaDAO alertaDAO = new AlertaDAO(connection);
-            Alerta alerta = alertaDAO.buscarPorId(debitoId);
-
-            int clienteId = alertaDAO.buscarClienteIdPorAlertaId(alerta.getAlertaId());
-            alerta.setCliente(new Cliente());
-            alerta.getCliente().setClienteId(clienteId);
+            Alerta alerta = alertaDAO.buscarPorDebitoId(debitoId); // Certifique-se de ter esse método
 
             if (alerta != null) {
+                int clienteId = alertaDAO.buscarClienteIdPorAlertaId(alerta.getAlertaId());
+                ClienteDAO clienteDAO = new ClienteDAO(connection);
+                Cliente cliente = clienteDAO.buscarPorId(clienteId);
+                alerta.setCliente(cliente);
+
                 txtMensagem.setText(alerta.getMensagem());
             } else {
                 txtMensagem.setText("⚠️ Nenhum alerta encontrado para este débito.");
@@ -150,21 +137,28 @@ public class TelaAlertaCliente extends javax.swing.JFrame {
             AlertaDAO alertaDAO = new AlertaDAO(connection);
             AcaoClienteDAO acaoDAO = new AcaoClienteDAO(connection);
             LogHistoricoDAO logDAO = new LogHistoricoDAO(connection);
+            ClienteDAO clienteDAO = new ClienteDAO(connection);
+            EmpresaDAO empresaDAO = new EmpresaDAO(connection);
+            DebitoAutomaticoDAO debitoDAO = new DebitoAutomaticoDAO(connection);
 
-            Alerta alerta = alertaDAO.buscarPorId(debitoId);
+            Alerta alerta = alertaDAO.buscarPorDebitoId(debitoId);
+
             if (alerta == null) {
-                JOptionPane.showMessageDialog(this, "Nenhum alerta encontrado.");
-                return;
+                alerta = new Alerta();
+                alerta.setDebitoId(debitoId);
+                alerta.setStatus(StatusAlerta.Pendente);
+                alerta.setMensagem("Descreva aqui o motivo da denúncia...");
+                alerta.setDataAlerta(LocalDateTime.now());
+                alerta.setAlertaId(alertaDAO.inserir(alerta));
             }
 
-            // Buscar o cliente manualmente
-            int clienteId = alertaDAO.buscarClienteIdPorAlertaId(alerta.getAlertaId()); // você vai criar esse método
-            alerta.setCliente(new Cliente());
-            alerta.getCliente().setClienteId(clienteId);
+            int clienteId = alertaDAO.buscarClienteIdPorAlertaId(alerta.getAlertaId());
+            Cliente cliente = clienteDAO.buscarPorId(clienteId);
+            alerta.setCliente(cliente);
 
             AcaoCliente acaoCliente = new AcaoCliente();
             acaoCliente.setAlertaId(alerta.getAlertaId());
-            acaoCliente.setClienteId(alerta.getCliente().getClienteId()); // cuidado: cliente deve estar setado no alerta
+            acaoCliente.setClienteId(clienteId);
             acaoCliente.setAcao(acao);
             acaoCliente.setDataAcao(LocalDateTime.now());
             acaoDAO.inserir(acaoCliente);
@@ -173,7 +167,7 @@ public class TelaAlertaCliente extends javax.swing.JFrame {
             alertaDAO.atualizarStatus(alerta.getAlertaId(), StatusAlerta.Resolvido);
 
             LogHistorico log = new LogHistorico();
-            log.setClienteId(acaoCliente.getClienteId());
+            log.setClienteId(cliente.getClienteId());
             log.setDescricaoEvento("Cliente selecionou ação: " + acao + " para débito ID " + debitoId);
             log.setDataEvento(LocalDateTime.now());
             logDAO.inserir(log);
@@ -181,20 +175,18 @@ public class TelaAlertaCliente extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Ação registrada com sucesso: " + acao);
             dispose();
 
-            // Envia e-mail para a central antifraude do banco
-            EmpresaDAO empresaDAO = new EmpresaDAO(connection);
-            DebitoAutomaticoDAO debitoDAO = new DebitoAutomaticoDAO(connection);
-            DebitoAutomatico debito = debitoDAO.buscarPorId(alerta.getDebitoId());
+            DebitoAutomatico debito = debitoDAO.buscarPorId(debitoId);
             Empresa empresa = empresaDAO.buscarPorId(debito.getEmpresaId());
 
-            String emailDestino = "leituraamanda9@gmail.com"; // E-mail do administrador do sistema
+            String emailDestino = "leituraamanda9@gmail.com";
             String assunto = "🚨 Denúncia de Débito Automático - ID " + debitoId;
-
-            String mensagem = "O cliente " + alerta.getCliente().getNome()
-                    + " (ID: " + alerta.getCliente().getClienteId() + ") denunciou o débito automático suspeito.\n\n"
+            String mensagem = "O cliente " + cliente.getNome()
+                    + " (ID: " + cliente.getClienteId() + ", E-mail: " + cliente.getEmail() + ") "
+                    + "denunciou o débito automático suspeito.\n\n"
                     + "🔸 Empresa: " + empresa.getNome() + "\n"
                     + "🔸 CNPJ: " + empresa.getCnpj() + "\n"
-                    + "🔸 Situação Cadastral: " + empresa.getSituacaoCadastral() + "\n"
+                    + "🔸 Situação Cadastral: "
+                    + (empresa.getSituacaoCadastral() != null ? empresa.getSituacaoCadastral() : "Não disponível") + "\n"
                     + "🔸 Débito ID: " + debitoId + "\n\n"
                     + "Essa denúncia foi registrada automaticamente pelo sistema.";
 

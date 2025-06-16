@@ -157,4 +157,25 @@ public class AlertaDAO {
         }
     }
 
+    public Alerta buscarPorDebitoId(int debitoId) throws SQLException {
+        String sql = "SELECT * FROM Alerta WHERE debito_id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, debitoId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Alerta alerta = new Alerta();
+                    alerta.setAlertaId(rs.getInt("alerta_id"));
+                    alerta.setDebitoId(rs.getInt("debito_id"));
+                    alerta.setDataAlerta(rs.getTimestamp("data_alerta").toLocalDateTime());
+                    alerta.setMensagem(rs.getString("mensagem"));
+                    alerta.setStatus(StatusAlerta.valueOf(rs.getString("status_alerta")));
+                    return alerta;
+                }
+            }
+        }
+
+        return null;
+    }
+
 }

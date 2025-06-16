@@ -61,7 +61,7 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
         for (int i = 0; i < empresas.size(); i++) {
             Empresa e = empresas.get(i);
             dados[i][0] = e.getNome();
-            dados[i][1] = e.getCnpj();
+            dados[i][3] = e.getCnpj();
 
         }
 

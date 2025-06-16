@@ -5,6 +5,7 @@ public class Cliente {
     private int clienteId;
     private String nome;
     private String cpf;
+    private String email;
 
     public Cliente() {
     }
@@ -39,12 +40,21 @@ public class Cliente {
         this.cpf = cpf;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     @Override
     public String toString() {
         return "Cliente{"
                 + "clienteId=" + clienteId
                 + ", nome='" + nome + '\''
                 + ", cpf='" + cpf + '\''
+                + ", email='" + email + '\''
                 + '}';
     }
 }

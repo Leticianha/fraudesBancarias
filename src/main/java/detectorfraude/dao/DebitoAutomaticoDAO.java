@@ -106,4 +106,27 @@ public class DebitoAutomaticoDAO {
         }
     }
 
+    public List<DebitoAutomatico> listarPorCliente(int clienteId) throws SQLException {
+        List<DebitoAutomatico> lista = new ArrayList<>();
+
+        String sql = "SELECT * FROM debito_automatico WHERE cliente_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, clienteId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                DebitoAutomatico debito = new DebitoAutomatico();
+                debito.setDebitoId(rs.getInt("debito_id"));
+                debito.setEmpresaId(rs.getInt("empresa_id"));
+                debito.setClienteId(rs.getInt("cliente_id"));
+                debito.setValor(rs.getBigDecimal("valor"));
+                debito.setDataCadastro(rs.getDate("data_cadastro").toLocalDate());
+                debito.setStatusSuspeita(rs.getString("status_suspeita"));
+                lista.add(debito);
+            }
+        }
+
+        return lista;
+    }
+
 }

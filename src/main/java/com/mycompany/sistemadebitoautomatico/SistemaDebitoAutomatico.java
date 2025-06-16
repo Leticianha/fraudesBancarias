@@ -6,7 +6,6 @@ import detectorfraude.util.ConexaoMySQL;
 import detectorfraude.view.TelaRoute;
 import java.sql.Connection;
 
-
 public class SistemaDebitoAutomatico {
 
     public static void main(String[] args) {
@@ -15,7 +14,7 @@ public class SistemaDebitoAutomatico {
             conn = ConexaoMySQL.getConexao();
 
             ClienteController clienteController = new ClienteController(conn);
-            Cliente cliente = clienteController.buscarPorId(96); // ou outro cliente do banco
+            Cliente cliente = clienteController.buscarPorId(96);
 
             if (cliente != null) {
                 new TelaRoute(cliente, conn).setVisible(true);

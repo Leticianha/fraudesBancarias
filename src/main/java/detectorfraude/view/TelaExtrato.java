@@ -145,7 +145,7 @@ public class TelaExtrato extends javax.swing.JFrame {
             DebitoAutomaticoDAO debitoDAO = new DebitoAutomaticoDAO(connection);
             EmpresaDAO empresaDAO = new EmpresaDAO(connection);
 
-            debitos = debitoDAO.listarTodos();
+            debitos = debitoDAO.listarPorCliente(cliente.getClienteId());
 
             DefaultTableModel model = (DefaultTableModel) tabelaExtrato.getModel();
             model.setRowCount(0); // limpa tabela
