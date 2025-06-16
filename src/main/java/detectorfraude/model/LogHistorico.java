@@ -8,8 +8,10 @@ public class LogHistorico {
     private int clienteId;
     private String descricaoEvento;
     private LocalDateTime dataEvento;
+    private StatusAcao statusAcao;
 
-    public LogHistorico() {}
+    public LogHistorico() {
+    }
 
     public int getLogId() {
         return logId;
@@ -42,14 +44,23 @@ public class LogHistorico {
     public void setDataEvento(LocalDateTime dataEvento) {
         this.dataEvento = dataEvento;
     }
+    
+    public StatusAcao getStatusAcao() {
+        return statusAcao;
+    }
+
+    public void setStatusAcao(StatusAcao statusAcao) {
+        this.statusAcao = statusAcao;
+    }
 
     @Override
     public String toString() {
-        return "LogHistorico{" +
-                "logId=" + logId +
-                ", clienteId=" + clienteId +
-                ", descricaoEvento='" + descricaoEvento + '\'' +
-                ", dataEvento=" + dataEvento +
-                '}';
+        return "LogHistorico{"
+                + "logId=" + logId
+                + ", clienteId=" + clienteId
+                + ", descricaoEvento='" + descricaoEvento + '\''
+                + ", dataEvento=" + dataEvento
+                + ", statusAcao=" + statusAcao
+                + '}';
     }
 }

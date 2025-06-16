@@ -14,11 +14,12 @@ public class LogHistoricoDAO {
     }
 
     public void inserir(LogHistorico log) throws SQLException {
-        String sql = "INSERT INTO Log_Historico (cliente_id, descricao_evento, data_evento) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO Log_Historico (cliente_id, descricao_evento, data_evento, status_acao) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, log.getClienteId());
             stmt.setString(2, log.getDescricaoEvento());
             stmt.setTimestamp(3, Timestamp.valueOf(log.getDataEvento()));
+            stmt.setString(4, log.getStatusAcao() != null ? log.getStatusAcao().name() : "Pendente");
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new SQLException("Erro ao inserir log histórico: " + e.getMessage(), e);
@@ -80,4 +81,20 @@ public class LogHistoricoDAO {
             stmt.executeUpdate();
         }
     }
+
+    public boolean salvarLogHistorico(LogHistorico log) {
+        String sql = "INSERT INTO Log_Historico (cliente_id, descricao_evento, data_evento, status_acao) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, log.getClienteId());
+            stmt.setString(2, log.getDescricaoEvento());
+            stmt.setTimestamp(3, Timestamp.valueOf(log.getDataEvento()));
+            stmt.setString(4, log.getStatusAcao().name()); // salva o enum como String no banco
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }

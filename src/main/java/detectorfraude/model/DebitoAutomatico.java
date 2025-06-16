@@ -13,6 +13,7 @@ public class DebitoAutomatico {
     private String tipoRecorrencia;
     private String statusSuspeita;
     private String statusAtivo;
+    private StatusAcao statusAcao;
 
     // Getters e Setters
     public int getDebitoId() {
@@ -79,6 +80,14 @@ public class DebitoAutomatico {
         this.statusAtivo = statusAtivo;
     }
 
+    public StatusAcao getStatusAcao() {
+        return statusAcao;
+    }
+
+    public void setStatusAcao(StatusAcao statusAcao) {
+        this.statusAcao = statusAcao;
+    }
+
     @Override
     public String toString() {
         return "DebitoAutomatico{"
@@ -90,6 +99,7 @@ public class DebitoAutomatico {
                 + ", tipoRecorrencia='" + tipoRecorrencia + '\''
                 + ", statusSuspeita='" + statusSuspeita + '\''
                 + ", statusAtivo='" + statusAtivo + '\''
+                + ", statusAcao='" + statusAcao + '\''
                 + '}';
     }
 }

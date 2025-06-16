@@ -129,4 +129,22 @@ public class DebitoAutomaticoDAO {
         return lista;
     }
 
+    public boolean atualizarStatusAtivo(int debitoId, String novoStatus) throws SQLException {
+        String sql = "UPDATE debito_automatico SET status_ativo = ? WHERE debito_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, novoStatus);
+            stmt.setInt(2, debitoId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    public void atualizarStatusAcao(int debitoId, String statusAcao) throws SQLException {
+        String sql = "UPDATE Debito_Automatico SET status_acao = ? WHERE debito_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, statusAcao);
+            stmt.setInt(2, debitoId);
+            stmt.executeUpdate();
+        }
+    }
+
 }

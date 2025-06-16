@@ -141,13 +141,13 @@ public class TelaAlertaCliente extends javax.swing.JFrame {
             EmpresaDAO empresaDAO = new EmpresaDAO(connection);
             DebitoAutomaticoDAO debitoDAO = new DebitoAutomaticoDAO(connection);
 
+            // Buscar ou criar alerta
             Alerta alerta = alertaDAO.buscarPorDebitoId(debitoId);
-
             if (alerta == null) {
                 alerta = new Alerta();
                 alerta.setDebitoId(debitoId);
                 alerta.setStatus(StatusAlerta.Pendente);
-                alerta.setMensagem("Descreva aqui o motivo da denúncia...");
+                alerta.setMensagem("Débito suspeito detectado");
                 alerta.setDataAlerta(LocalDateTime.now());
                 alerta.setAlertaId(alertaDAO.inserir(alerta));
             }
@@ -156,6 +156,7 @@ public class TelaAlertaCliente extends javax.swing.JFrame {
             Cliente cliente = clienteDAO.buscarPorId(clienteId);
             alerta.setCliente(cliente);
 
+            // Registrar a ação do cliente
             AcaoCliente acaoCliente = new AcaoCliente();
             acaoCliente.setAlertaId(alerta.getAlertaId());
             acaoCliente.setClienteId(clienteId);
@@ -163,47 +164,94 @@ public class TelaAlertaCliente extends javax.swing.JFrame {
             acaoCliente.setDataAcao(LocalDateTime.now());
             acaoDAO.inserir(acaoCliente);
 
+            // Marcar o alerta como resolvido
             alerta.setStatus(StatusAlerta.Resolvido);
             alertaDAO.atualizarStatus(alerta.getAlertaId(), StatusAlerta.Resolvido);
 
+            // Atualizar status_acao e status_ativo do débito automático conforme ação
+            DebitoAutomatico debito = debitoDAO.buscarPorId(debitoId);
+            StatusAcao statusAcaoEnum;
+            switch (acao.toLowerCase()) {
+                case "bloquear":
+                    debito.setStatusAtivo("Inativo");
+                    debito.setStatusAcao(StatusAcao.Bloqueado);
+                    debitoDAO.atualizarStatusAtivo(debitoId, "Inativo");
+                    statusAcaoEnum = StatusAcao.Bloqueado;
+                    break;
+                case "denunciar":
+                    debito.setStatusAcao(StatusAcao.Denunciado);
+                    statusAcaoEnum = StatusAcao.Denunciado;
+                    break;
+                case "ignorar":
+                    debito.setStatusAcao(StatusAcao.Ignorado);
+                    statusAcaoEnum = StatusAcao.Ignorado;
+                    break;
+                default:
+                    debito.setStatusAcao(StatusAcao.Pendente);
+                    statusAcaoEnum = StatusAcao.Pendente;
+                    break;
+            }
+            debitoDAO.atualizarStatusAcao(debitoId, statusAcaoEnum.name());
+
+            // Registrar no log com o statusAcao correto (não nulo)
+            String descricaoEvento;
+            switch (acao.toLowerCase()) {
+                case "bloquear":
+                    descricaoEvento = "Cliente bloqueou o débito automático ID " + debitoId;
+                    break;
+                case "denunciar":
+                    descricaoEvento = "Cliente denunciou o débito automático ID " + debitoId;
+                    break;
+                case "ignorar":
+                    descricaoEvento = "Cliente ignorou o débito automático ID " + debitoId;
+                    break;
+                default:
+                    descricaoEvento = "Cliente selecionou ação: " + acao + " para débito ID " + debitoId;
+                    break;
+            }
+
             LogHistorico log = new LogHistorico();
             log.setClienteId(cliente.getClienteId());
-            log.setDescricaoEvento("Cliente selecionou ação: " + acao + " para débito ID " + debitoId);
+            log.setDescricaoEvento(descricaoEvento);
             log.setDataEvento(LocalDateTime.now());
+            log.setStatusAcao(statusAcaoEnum);  // Nunca será null aqui
             logDAO.inserir(log);
 
             JOptionPane.showMessageDialog(this, "Ação registrada com sucesso: " + acao);
             dispose();
 
-            DebitoAutomatico debito = debitoDAO.buscarPorId(debitoId);
-            Empresa empresa = empresaDAO.buscarPorId(debito.getEmpresaId());
+            // Enviar email apenas se for "Denunciar"
+            if ("denunciar".equalsIgnoreCase(acao)) {
+                Empresa empresa = empresaDAO.buscarPorId(debito.getEmpresaId());
+                String emailDestino = "leituraamanda9@gmail.com";
+                String assunto = "🚨 Ação de Débito Automático - ID: " + debitoId;
+                String mensagem = String.format(
+                        "Prezados,%n%n"
+                        + "O cliente %s (ID: %d, E-mail: %s) efetuou a ação '%s' referente a um débito automático.%n%n"
+                        + "Detalhes do débito:%n%n"
+                        + "- Empresa: %s%n"
+                        + "- CNPJ: %s%n"
+                        + "- Situação Cadastral: %s%n"
+                        + "- ID do Débito: %d%n%n"
+                        + "Esta ação foi registrada automaticamente pelo sistema para análise e providências cabíveis.%n%n"
+                        + "Atenciosamente,%n"
+                        + "Equipe de Monitoramento de Fraudes",
+                        cliente.getNome(),
+                        cliente.getClienteId(),
+                        cliente.getEmail(),
+                        acao,
+                        empresa.getNome(),
+                        empresa.getCnpj(),
+                        empresa.getSituacaoCadastral() != null ? empresa.getSituacaoCadastral() : "Não disponível (CNPJ inválido ou suspeito)",
+                        debitoId
+                );
 
-            String emailDestino = "leituraamanda9@gmail.com";
-            String assunto = "🚨 Denúncia de Débito Automático - ID: " + debitoId;
-            String mensagem = String.format(
-                    "Prezados,%n%n"
-                    + "O cliente %s (ID: %d, E-mail: %s) efetuou uma denúncia referente a um débito automático suspeito.%n%n"
-                    + "Detalhes da denúncia:%n%n"
-                    + "- Empresa: %s%n"
-                    + "- CNPJ: %s%n"
-                    + "- Situação Cadastral: %s%n"
-                    + "- ID do Débito: %d%n%n"
-                    + "Esta denúncia foi registrada automaticamente pelo sistema de detecção de fraudes bancárias para análise e providências cabíveis.%n%n"
-                    + "Atenciosamente,%n"
-                    + "Equipe de Monitoramento de Fraudes",
-                    cliente.getNome(),
-                    cliente.getClienteId(),
-                    cliente.getEmail(),
-                    empresa.getNome(),
-                    empresa.getCnpj(),
-                    (empresa.getSituacaoCadastral() != null ? empresa.getSituacaoCadastral() : "Não disponível (CNPJ inválido ou suspeito)"),
-                    debitoId
-            );
-
-            EmailService.enviarEmail(emailDestino, assunto, mensagem);
+                EmailService.enviarEmail(emailDestino, assunto, mensagem);
+            }
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erro ao registrar ação: " + e.getMessage());
+            logger.log(Level.SEVERE, "Erro no registrarAcao", e);
         }
     }
 
