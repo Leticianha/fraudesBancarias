@@ -195,6 +195,49 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
         barraProgressoDuplo.setValores(countDenunciados, countBloqueados);
     }
 
+    private void btnPDFActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            // Caminho do arquivo
+            String filePath = System.getProperty("user.home") + "/Desktop/relatorio_extrato.pdf";
+
+            // Criação do documento PDF
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document();
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, new java.io.FileOutputStream(filePath));
+            document.open();
+
+            // Título
+            document.add(new com.itextpdf.text.Paragraph("Relatório de Débitos - Cliente: " + cliente.getNome()));
+            document.add(new com.itextpdf.text.Paragraph(" ")); // linha em branco
+
+            // Tabela PDF com as mesmas colunas da tabela
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(5); // 5 colunas
+
+            // Cabeçalhos
+            table.addCell("Nome da Empresa");
+            table.addCell("CNPJ");
+            table.addCell("Valor");
+            table.addCell("Data");
+            table.addCell("Status");
+
+            // Preenchendo os dados da tabela
+            for (int i = 0; i < tabelaHistorico.getRowCount(); i++) {
+                for (int j = 0; j < tabelaHistorico.getColumnCount(); j++) {
+                    Object value = tabelaHistorico.getValueAt(i, j);
+                    table.addCell(value != null ? value.toString() : "");
+                }
+            }
+
+            document.add(table);
+            document.close();
+
+            javax.swing.JOptionPane.showMessageDialog(this, "PDF gerado com sucesso em: " + filePath);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Erro ao gerar PDF: " + e.getMessage());
+        }
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -206,6 +249,7 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         tabelaHistorico = new javax.swing.JTable();
         painelGrafico = new javax.swing.JPanel();
+        btnPDDF = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -272,6 +316,13 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
             .addGap(0, 20, Short.MAX_VALUE)
         );
 
+        btnPDDF.setText("PDF");
+        btnPDDF.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPDDFActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -281,15 +332,19 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 731, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(15, 15, 15)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(lblBloqueados)
                                 .addGap(90, 90, 90)
                                 .addComponent(lblDenunciados)
                                 .addGap(90, 90, 90)
                                 .addComponent(painelGrafico, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 700, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 700, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btnPDDF)
+                                .addGap(170, 170, 170)))))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -297,7 +352,9 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(20, 20, 20)
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnPDDF))
                 .addGap(20, 20, 20)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(30, 30, 30)
@@ -305,7 +362,7 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(lblBloqueados)
                         .addComponent(lblDenunciados))
-                    .addComponent(painelGrafico, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(painelGrafico, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(30, Short.MAX_VALUE))
         );
 
@@ -317,6 +374,10 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
         String statusSelecionado = (String) jComboBox1.getSelectedItem();
         filtrarExtratoPorStatus(statusSelecionado);
     }//GEN-LAST:event_jComboBox1ActionPerformed
+
+    private void btnPDDFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPDDFActionPerformed
+        btnPDFActionPerformed(evt);
+    }//GEN-LAST:event_btnPDDFActionPerformed
 
     public static void main(String args[]) {
 
@@ -345,6 +406,7 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnPDDF;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
