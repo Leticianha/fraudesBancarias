@@ -3,16 +3,21 @@ package detectorfraude.controller;
 import detectorfraude.dao.AlertaDAO;
 import detectorfraude.dao.LogHistoricoDAO;
 import detectorfraude.dao.AcaoClienteDAO;
+import detectorfraude.dao.EmpresaDAO;
 import detectorfraude.model.Alerta;
 import detectorfraude.model.AcaoCliente;
 import detectorfraude.model.DebitoAutomatico;
+import detectorfraude.model.Empresa;
 import detectorfraude.model.LogHistorico;
 import detectorfraude.model.StatusAlerta;
 import detectorfraude.service.AnalisePadroesService;
+import detectorfraude.service.ValidacaoCNPJService;
 import detectorfraude.util.ConexaoMySQL;
+import java.math.BigDecimal;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -75,18 +80,55 @@ public class DeteccaoFraudeController {
         }
     }
 
-    public String gerarResumoDebito(String nomeEmpresa, String cnpj, double valor, String data, String status) {
-    return "DeteccaoFraudeController {\n" +
-           "  Alerta gerado: 🔔\n" +
-           "  - Empresa: " + nomeEmpresa + "\n" +
-           "  - CNPJ: " + cnpj + "\n" +
-           "  - Valor: R$ " + String.format("%.2f", valor) + "\n" +
-           "  - Data: " + data + "\n" +
-           "  Evento registrado no histórico: 📝\n" +
-           "  - Débito suspeito registrado com sucesso\n" +
-           "  Ação do cliente registrada: 📌\n" +
-           "  - Tipo da ação: " + status + "\n" +
-           "}";
-}
+    public int obterEmpresaIdPorCnpj(String cnpj) {
+        try (Connection conn = ConexaoMySQL.getConexao()) {
+            EmpresaDAO empresaDAO = new EmpresaDAO(conn);
+            List<Empresa> empresas = empresaDAO.listarTodas();
+            for (Empresa emp : empresas) {
+                if (emp.getCnpj().equals(cnpj)) {
+                    return emp.getEmpresaId();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar empresa por CNPJ: " + e.getMessage());
+        }
+        return -1; // se não encontrou
+    }
 
+    public String gerarResumoDebito(String nomeEmpresa, String cnpj, BigDecimal valor, String data, String status) {
+        StringBuilder resumo = new StringBuilder();
+
+        resumo.append("Empresa: ").append(nomeEmpresa).append("\n");
+        resumo.append("CNPJ: ").append(cnpj).append("\n");
+        resumo.append("Valor: R$ ").append(String.format("%.2f", valor)).append("\n");
+        resumo.append("Data: ").append(data).append("\n");
+        resumo.append("Status: ").append(status).append("\n");
+
+        try {
+            // Criação do débito com os dados básicos
+            DebitoAutomatico debito = new DebitoAutomatico();
+            debito.setValor(valor);
+            debito.setData(new SimpleDateFormat("dd/MM/yyyy").parse(data));
+            debito.setEmpresaId(obterEmpresaIdPorCnpj(cnpj));
+
+            // Chamada à análise de padrões
+            AnalisePadroesService padroes = new AnalisePadroesService();
+            List<String> motivos = padroes.getMotivosSuspeita(debito);
+
+            if (!motivos.isEmpty()) {
+                resumo.append("Motivos para marcação como suspeito:\n");
+                for (String motivo : motivos) {
+                    resumo.append("- ").append(motivo).append("\n");
+                }
+            } else {
+                resumo.append("Nenhum padrão suspeito identificado.\n");
+            }
+
+        } catch (Exception e) {
+            resumo.append("Erro ao analisar débito: ").append(e.getMessage()).append("\n");
+        }
+
+        resumo.append("------------------------------------------------------------\n");
+        return resumo.toString();
+    }
 }

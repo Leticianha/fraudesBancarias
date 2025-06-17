@@ -2,6 +2,7 @@ package detectorfraude.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Date;
 
 public class DebitoAutomatico {
 
@@ -101,5 +102,9 @@ public class DebitoAutomatico {
                 + ", statusAtivo='" + statusAtivo + '\''
                 + ", statusAcao='" + statusAcao + '\''
                 + '}';
+    }
+
+    public void setData(Date parse) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

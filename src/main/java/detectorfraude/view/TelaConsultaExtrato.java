@@ -15,6 +15,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import detectorfraude.view.BarraProgressoDuplo;
 import java.awt.Color;
+import java.math.BigDecimal;
 
 public class TelaConsultaExtrato extends javax.swing.JFrame {
 
@@ -109,10 +110,11 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
 
                 // Agora aqui dentro está tudo certo para usar extrato e status
                 DeteccaoFraudeController controller = new DeteccaoFraudeController();
-                String resumo = controller.gerarResumoDebito(
+                String resumo;
+                resumo = controller.gerarResumoDebito(
                         extrato.getNomeEmpresa(),
                         extrato.getCnpj(),
-                        extrato.getValor(),
+                        BigDecimal.valueOf(extrato.getValor()),
                         sdf.format(extrato.getData()),
                         status
                 );
@@ -176,10 +178,11 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
                 String resumo = controller.gerarResumoDebito(
                         extrato.getNomeEmpresa(),
                         extrato.getCnpj(),
-                        extrato.getValor(),
+                        BigDecimal.valueOf(extrato.getValor()),
                         sdf.format(extrato.getData()),
                         status
                 );
+
                 System.out.println(resumo);
 
             }
@@ -193,49 +196,6 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
         }
 
         barraProgressoDuplo.setValores(countDenunciados, countBloqueados);
-    }
-
-    private void btnPDFActionPerformed(java.awt.event.ActionEvent evt) {
-        try {
-            // Caminho do arquivo
-            String filePath = System.getProperty("user.home") + "/Desktop/relatorio_extrato.pdf";
-
-            // Criação do documento PDF
-            com.itextpdf.text.Document document = new com.itextpdf.text.Document();
-            com.itextpdf.text.pdf.PdfWriter.getInstance(document, new java.io.FileOutputStream(filePath));
-            document.open();
-
-            // Título
-            document.add(new com.itextpdf.text.Paragraph("Relatório de Débitos - Cliente: " + cliente.getNome()));
-            document.add(new com.itextpdf.text.Paragraph(" ")); // linha em branco
-
-            // Tabela PDF com as mesmas colunas da tabela
-            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(5); // 5 colunas
-
-            // Cabeçalhos
-            table.addCell("Nome da Empresa");
-            table.addCell("CNPJ");
-            table.addCell("Valor");
-            table.addCell("Data");
-            table.addCell("Status");
-
-            // Preenchendo os dados da tabela
-            for (int i = 0; i < tabelaHistorico.getRowCount(); i++) {
-                for (int j = 0; j < tabelaHistorico.getColumnCount(); j++) {
-                    Object value = tabelaHistorico.getValueAt(i, j);
-                    table.addCell(value != null ? value.toString() : "");
-                }
-            }
-
-            document.add(table);
-            document.close();
-
-            javax.swing.JOptionPane.showMessageDialog(this, "PDF gerado com sucesso em: " + filePath);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            javax.swing.JOptionPane.showMessageDialog(this, "Erro ao gerar PDF: " + e.getMessage());
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -376,8 +336,72 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void btnPDDFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPDDFActionPerformed
-        btnPDFActionPerformed(evt);
-    }//GEN-LAST:event_btnPDDFActionPerformed
+        try {
+            // Caminho do arquivo
+            String filePath = System.getProperty("user.home") + "/Desktop/relatorio_extrato.pdf";
+
+            // Criação do documento PDF
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document();
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, new java.io.FileOutputStream(filePath));
+            document.open();
+
+            // Título
+            document.add(new com.itextpdf.text.Paragraph("Relatório de Débitos - Cliente: " + cliente.getNome()));
+            document.add(new com.itextpdf.text.Paragraph(" ")); // linha em branco
+
+            // Criar tabela com 6 colunas (5 atuais + 1 para resumo)
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(6);
+
+            // Cabeçalhos
+            table.addCell("Nome da Empresa");
+            table.addCell("CNPJ");
+            table.addCell("Valor");
+            table.addCell("Data");
+            table.addCell("Status");
+            table.addCell("Resumo");
+
+            DeteccaoFraudeController controller = new DeteccaoFraudeController();
+
+            // Agora percorre os dados da tabela para preencher as linhas e resumo
+            for (int i = 0; i < tabelaHistorico.getRowCount(); i++) {
+                String nomeEmpresa = tabelaHistorico.getValueAt(i, 0).toString();
+                String cnpj = tabelaHistorico.getValueAt(i, 1).toString();
+
+                // Valor precisa ser convertido de String para double
+                String valorStr = tabelaHistorico.getValueAt(i, 2).toString().replace("R$ ", "").replace(",", ".");
+                double valor = Double.parseDouble(valorStr);
+
+                String dataStr = tabelaHistorico.getValueAt(i, 3).toString();
+                String status = tabelaHistorico.getValueAt(i, 4).toString();
+
+                // Adiciona células normais
+                table.addCell(nomeEmpresa);
+                table.addCell(cnpj);
+                table.addCell(String.format("R$ %.2f", valor));
+                table.addCell(dataStr);
+                table.addCell(status);
+
+                // Gera resumo chamando o controller e adiciona ao PDF
+                String resumo = controller.gerarResumoDebito(
+                        nomeEmpresa,
+                        cnpj,
+                        BigDecimal.valueOf(valor),
+                        dataStr,
+                        status
+                );
+                table.addCell(resumo);
+            }
+
+            document.add(table);
+            document.close();
+
+            javax.swing.JOptionPane.showMessageDialog(this, "PDF gerado com sucesso em: " + filePath);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Erro ao gerar PDF: " + e.getMessage());
+
+        }    }//GEN-LAST:event_btnPDDFActionPerformed
 
     public static void main(String args[]) {
 
