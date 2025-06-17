@@ -10,7 +10,7 @@ import detectorfraude.model.LogHistorico;
 import detectorfraude.model.StatusAlerta;
 import detectorfraude.service.AnalisePadroesService;
 import detectorfraude.util.ConexaoMySQL;
-        
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -37,7 +37,7 @@ public class DeteccaoFraudeController {
                 alerta.setDebitoId(debito.getDebitoId());
                 alerta.setDataAlerta(LocalDateTime.now());
                 alerta.setMensagem(mensagemAlerta);
-                alerta.setStatus(StatusAlerta.Pendente); 
+                alerta.setStatus(StatusAlerta.Pendente);
 
                 AlertaDAO alertaDAO = new AlertaDAO(connection);
                 int alertaId = alertaDAO.inserir(alerta);
@@ -74,4 +74,19 @@ public class DeteccaoFraudeController {
             System.out.println("✅ Débito considerado normal.");
         }
     }
+
+    public String gerarResumoDebito(String nomeEmpresa, String cnpj, double valor, String data, String status) {
+    return "DeteccaoFraudeController {\n" +
+           "  Alerta gerado: 🔔\n" +
+           "  - Empresa: " + nomeEmpresa + "\n" +
+           "  - CNPJ: " + cnpj + "\n" +
+           "  - Valor: R$ " + String.format("%.2f", valor) + "\n" +
+           "  - Data: " + data + "\n" +
+           "  Evento registrado no histórico: 📝\n" +
+           "  - Débito suspeito registrado com sucesso\n" +
+           "  Ação do cliente registrada: 📌\n" +
+           "  - Tipo da ação: " + status + "\n" +
+           "}";
+}
+
 }

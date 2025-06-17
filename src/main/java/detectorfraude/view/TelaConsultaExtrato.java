@@ -1,5 +1,6 @@
 package detectorfraude.view;
 
+import detectorfraude.controller.DeteccaoFraudeController;
 import detectorfraude.model.Cliente;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -105,6 +106,17 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
                     sdf.format(extrato.getData()),
                     status
                 });
+
+                // Agora aqui dentro está tudo certo para usar extrato e status
+                DeteccaoFraudeController controller = new DeteccaoFraudeController();
+                String resumo = controller.gerarResumoDebito(
+                        extrato.getNomeEmpresa(),
+                        extrato.getCnpj(),
+                        extrato.getValor(),
+                        sdf.format(extrato.getData()),
+                        status
+                );
+                System.out.println(resumo);
             }
         }
 
@@ -159,6 +171,17 @@ public class TelaConsultaExtrato extends javax.swing.JFrame {
                     sdf.format(extrato.getData()),
                     status
                 });
+
+                DeteccaoFraudeController controller = new DeteccaoFraudeController();
+                String resumo = controller.gerarResumoDebito(
+                        extrato.getNomeEmpresa(),
+                        extrato.getCnpj(),
+                        extrato.getValor(),
+                        sdf.format(extrato.getData()),
+                        status
+                );
+                System.out.println(resumo);
+
             }
         }
 
